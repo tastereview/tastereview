@@ -1,9 +1,9 @@
 -- BiteReview Database Schema
 -- Run this in Supabase SQL Editor (Dashboard → SQL Editor → New query)
 
--- ============================================
+-- =============================================
 -- TABLES
--- ============================================
+-- =============================================
 
 -- Restaurant owners
 CREATE TABLE restaurants (
