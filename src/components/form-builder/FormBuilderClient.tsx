@@ -1,0 +1,238 @@
+'use client'
+
+import { useState } from 'react'
+import type { Form, Question } from '@/types/database.types'
+import { TemplateSelector } from './TemplateSelector'
+import { QuestionList } from './QuestionList'
+import { QuestionEditor } from './QuestionEditor'
+import { AddQuestionMenu } from './AddQuestionMenu'
+import { RewardTextEditor } from './RewardTextEditor'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
+import { MAX_QUESTIONS_PER_FORM } from '@/types/forms.types'
+
+interface FormBuilderClientProps {
+  form: Form | null
+  initialQuestions: Question[]
+  restaurantId: string
+}
+
+export function FormBuilderClient({
+  form,
+  initialQuestions,
+  restaurantId,
+}: FormBuilderClientProps) {
+  const supabase = createClient()
+  const [questions, setQuestions] = useState<Question[]>(initialQuestions)
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
+  const [currentForm, setCurrentForm] = useState<Form | null>(form)
+  const [isSaving, setIsSaving] = useState(false)
+
+  const handleQuestionsChange = async (newQuestions: Question[]) => {
+    setQuestions(newQuestions)
+
+    // Update order_index in database
+    setIsSaving(true)
+    try {
+      const updates = newQuestions.map((q, index) => ({
+        id: q.id,
+        order_index: index,
+      }))
+
+      for (const update of updates) {
+        await supabase
+          .from('questions')
+          .update({ order_index: update.order_index })
+          .eq('id', update.id)
+      }
+    } catch (error) {
+      console.error('Failed to update order:', error)
+      toast.error('Errore nel salvare l\'ordine')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleQuestionUpdate = async (updatedQuestion: Question) => {
+    setQuestions((prev) =>
+      prev.map((q) => (q.id === updatedQuestion.id ? updatedQuestion : q))
+    )
+    setEditingQuestion(null)
+
+    setIsSaving(true)
+    try {
+      const { error } = await supabase
+        .from('questions')
+        .update({
+          label: updatedQuestion.label,
+          description: updatedQuestion.description,
+          is_required: updatedQuestion.is_required,
+          options: updatedQuestion.options,
+        })
+        .eq('id', updatedQuestion.id)
+
+      if (error) throw error
+      toast.success('Domanda aggiornata')
+    } catch (error) {
+      console.error('Failed to update question:', error)
+      toast.error('Errore nel salvare la domanda')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleQuestionDelete = async (questionId: string) => {
+    setQuestions((prev) => prev.filter((q) => q.id !== questionId))
+
+    setIsSaving(true)
+    try {
+      const { error } = await supabase
+        .from('questions')
+        .delete()
+        .eq('id', questionId)
+
+      if (error) throw error
+      toast.success('Domanda eliminata')
+    } catch (error) {
+      console.error('Failed to delete question:', error)
+      toast.error('Errore nell\'eliminare la domanda')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleAddQuestion = async (newQuestion: Omit<Question, 'id' | 'created_at'>) => {
+    if (questions.length >= MAX_QUESTIONS_PER_FORM) {
+      toast.error(`Massimo ${MAX_QUESTIONS_PER_FORM} domande per modulo`)
+      return
+    }
+
+    if (!currentForm) {
+      toast.error('Nessun modulo trovato')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      const { data, error } = await supabase
+        .from('questions')
+        .insert({
+          ...newQuestion,
+          form_id: currentForm.id,
+          order_index: questions.length,
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setQuestions((prev) => [...prev, data as Question])
+      toast.success('Domanda aggiunta')
+    } catch (error) {
+      console.error('Failed to add question:', error)
+      toast.error('Errore nell\'aggiungere la domanda')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleTemplateApply = async (templateQuestions: Omit<Question, 'id' | 'form_id' | 'created_at'>[]) => {
+    if (!currentForm) return
+
+    setIsSaving(true)
+    try {
+      // Delete existing questions
+      await supabase
+        .from('questions')
+        .delete()
+        .eq('form_id', currentForm.id)
+
+      // Insert new questions
+      const { data, error } = await supabase
+        .from('questions')
+        .insert(
+          templateQuestions.map((q, index) => ({
+            ...q,
+            form_id: currentForm.id,
+            order_index: index,
+          }))
+        )
+        .select()
+
+      if (error) throw error
+
+      setQuestions((data || []) as Question[])
+      toast.success('Template applicato')
+    } catch (error) {
+      console.error('Failed to apply template:', error)
+      toast.error('Errore nell\'applicare il template')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleRewardTextUpdate = async (rewardText: string) => {
+    if (!currentForm) return
+
+    setIsSaving(true)
+    try {
+      const { error } = await supabase
+        .from('forms')
+        .update({ reward_text: rewardText })
+        .eq('id', currentForm.id)
+
+      if (error) throw error
+
+      setCurrentForm((prev) => (prev ? { ...prev, reward_text: rewardText } : null))
+      toast.success('Messaggio premio aggiornato')
+    } catch (error) {
+      console.error('Failed to update reward text:', error)
+      toast.error('Errore nel salvare il messaggio')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Template Selector */}
+      <TemplateSelector onApply={handleTemplateApply} disabled={isSaving} />
+
+      {/* Questions */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Domande ({questions.length}/{MAX_QUESTIONS_PER_FORM})</CardTitle>
+          <AddQuestionMenu
+            onAdd={handleAddQuestion}
+            disabled={isSaving || questions.length >= MAX_QUESTIONS_PER_FORM}
+            formId={currentForm?.id || ''}
+          />
+        </CardHeader>
+        <CardContent>
+          <QuestionList
+            questions={questions}
+            onReorder={handleQuestionsChange}
+            onEdit={setEditingQuestion}
+            onDelete={handleQuestionDelete}
+            disabled={isSaving}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Reward Text */}
+      <RewardTextEditor
+        rewardText={currentForm?.reward_text || ''}
+        onSave={handleRewardTextUpdate}
+        disabled={isSaving}
+      />
+
+      {/* Question Editor Dialog */}
+      <QuestionEditor
+        question={editingQuestion}
+        onSave={handleQuestionUpdate}
+        onClose={() => setEditingQuestion(null)}
+      />
+    </div>
+  )
+}

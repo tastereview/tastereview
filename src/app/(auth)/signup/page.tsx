@@ -1,0 +1,140 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Loader2 } from 'lucide-react'
+
+export default function SignupPage() {
+  const router = useRouter()
+  const supabase = createClient()
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+
+    // Validation
+    if (password.length < 6) {
+      setError('La password deve essere di almeno 6 caratteri')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('Le password non corrispondono')
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      })
+
+      if (error) {
+        if (error.message.includes('already registered')) {
+          setError('Questa email è già registrata')
+        } else {
+          setError(error.message)
+        }
+        return
+      }
+
+      // Auto-login successful, redirect to onboarding
+      router.push('/onboarding')
+      router.refresh()
+    } catch {
+      setError('Si è verificato un errore. Riprova.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Crea il tuo account</CardTitle>
+          <CardDescription>
+            Inizia a raccogliere feedback dai tuoi clienti
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSignup}>
+          <CardContent className="space-y-4">
+            {error && (
+              <div className="p-3 text-sm text-red-500 bg-red-50 border border-red-200 rounded-md">
+                {error}
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="nome@ristorante.it"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Minimo 6 caratteri"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Conferma password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Ripeti la password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Registrazione in corso...
+                </>
+              ) : (
+                'Registrati'
+              )}
+            </Button>
+            <p className="text-sm text-muted-foreground text-center">
+              Hai già un account?{' '}
+              <Link href="/login" className="text-primary hover:underline">
+                Accedi
+              </Link>
+            </p>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
+  )
+}
