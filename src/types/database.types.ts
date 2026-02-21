@@ -16,10 +16,7 @@ export type Database = {
           name: string
           slug: string
           logo_url: string | null
-          google_business_url: string | null
-          instagram_handle: string | null
-          tripadvisor_url: string | null
-          facebook_url: string | null
+          social_links: Record<string, string> | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_status: string
@@ -32,10 +29,7 @@ export type Database = {
           name: string
           slug: string
           logo_url?: string | null
-          google_business_url?: string | null
-          instagram_handle?: string | null
-          tripadvisor_url?: string | null
-          facebook_url?: string | null
+          social_links?: Record<string, string> | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_status?: string
@@ -48,10 +42,7 @@ export type Database = {
           name?: string
           slug?: string
           logo_url?: string | null
-          google_business_url?: string | null
-          instagram_handle?: string | null
-          tripadvisor_url?: string | null
-          facebook_url?: string | null
+          social_links?: Record<string, string> | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_status?: string
@@ -146,6 +137,29 @@ export type Database = {
           created_at?: string
         }
       }
+      tables: {
+        Row: {
+          id: string
+          restaurant_id: string
+          name: string
+          identifier: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          restaurant_id: string
+          name: string
+          identifier: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          restaurant_id?: string
+          name?: string
+          identifier?: string
+          created_at?: string
+        }
+      }
       answers: {
         Row: {
           id: string
@@ -219,3 +233,7 @@ export type SubmissionUpdate = Database['public']['Tables']['submissions']['Upda
 export type Answer = Database['public']['Tables']['answers']['Row']
 export type AnswerInsert = Database['public']['Tables']['answers']['Insert']
 export type AnswerUpdate = Database['public']['Tables']['answers']['Update']
+
+export type Table = Database['public']['Tables']['tables']['Row']
+export type TableInsert = Database['public']['Tables']['tables']['Insert']
+export type TableUpdate = Database['public']['Tables']['tables']['Update']

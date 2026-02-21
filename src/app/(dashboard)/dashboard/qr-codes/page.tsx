@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import type { Restaurant, Form } from '@/types/database.types'
+import type { Restaurant, Form, Table } from '@/types/database.types'
 import { QRCodeClient } from '@/components/dashboard/QRCodeClient'
 
 export default async function QRCodesPage() {
@@ -33,24 +33,35 @@ export default async function QRCodesPage() {
 
   const form = formData as Form | null
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  // Get tables
+  const { data: tablesData } = await supabase
+    .from('tables')
+    .select('*')
+    .eq('restaurant_id', restaurant.id)
+    .order('created_at', { ascending: true })
+
+  const tables = (tablesData || []) as Table[]
+
+  const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   const feedbackUrl = form
-    ? `${baseUrl}/r/${restaurant.slug}/${form.id}`
+    ? `${appBaseUrl}/r/${restaurant.slug}/${form.id}`
     : null
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
+    <div className="max-w-3xl mx-auto space-y-8">
       <div>
         <h1 className="text-3xl font-bold">QR Code</h1>
         <p className="text-muted-foreground mt-1">
-          Genera e scarica il QR code per il tuo ristorante
+          Genera e scarica i QR code per il tuo ristorante
         </p>
       </div>
 
       {feedbackUrl ? (
         <QRCodeClient
-          url={feedbackUrl}
+          baseUrl={feedbackUrl}
+          restaurantId={restaurant.id}
           restaurantName={restaurant.name}
+          initialTables={tables}
         />
       ) : (
         <div className="text-center py-12 text-muted-foreground">

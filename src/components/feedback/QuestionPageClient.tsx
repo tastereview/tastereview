@@ -18,6 +18,8 @@ interface QuestionPageClientProps {
   isLast: boolean
   formId: string
   restaurantSlug: string
+  tableIdentifier: string | null
+  tableParam: string | null
 }
 
 const SUBMISSION_KEY = 'feedback_submission'
@@ -32,6 +34,8 @@ export function QuestionPageClient({
   isLast,
   formId,
   restaurantSlug,
+  tableIdentifier,
+  tableParam,
 }: QuestionPageClientProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -40,6 +44,10 @@ export function QuestionPageClient({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward')
+
+  const tableQuery = tableParam
+    ? `?t=${encodeURIComponent(tableParam)}`
+    : ''
 
   // Load saved answer from sessionStorage
   useEffect(() => {
@@ -63,7 +71,10 @@ export function QuestionPageClient({
     if (!submissionId) {
       const { data, error } = await supabase
         .from('submissions')
-        .insert({ form_id: formId })
+        .insert({
+          form_id: formId,
+          table_identifier: tableIdentifier || null,
+        })
         .select('id')
         .single()
 
@@ -139,7 +150,7 @@ export function QuestionPageClient({
 
         router.push(`/r/${restaurantSlug}/${formId}/reward`)
       } else {
-        router.push(`/r/${restaurantSlug}/${formId}/${questionIndex + 1}`)
+        router.push(`/r/${restaurantSlug}/${formId}/${questionIndex + 1}${tableQuery}`)
       }
     } catch (err) {
       console.error('Failed to save answer:', err)
@@ -152,7 +163,7 @@ export function QuestionPageClient({
   const handleBack = () => {
     if (isFirst) return
     setDirection('backward')
-    router.push(`/r/${restaurantSlug}/${formId}/${questionIndex - 1}`)
+    router.push(`/r/${restaurantSlug}/${formId}/${questionIndex - 1}${tableQuery}`)
   }
 
   const variants = {

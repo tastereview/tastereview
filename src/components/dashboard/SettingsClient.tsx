@@ -8,7 +8,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { Loader2, Store, Share2 } from 'lucide-react'
+import { Loader2, Store, Share2, Plus, X } from 'lucide-react'
+import {
+  PLATFORMS,
+  DEFAULT_PLATFORM_KEYS,
+  EXTRA_PLATFORM_KEYS,
+} from '@/lib/constants/platforms'
+import { GooglePlaceIdFinder } from './GooglePlaceIdFinder'
 
 interface SettingsClientProps {
   restaurant: Restaurant
@@ -21,12 +27,17 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
   const [name, setName] = useState(restaurant.name)
   const [isSavingInfo, setIsSavingInfo] = useState(false)
 
-  // Social links state
-  const [googleUrl, setGoogleUrl] = useState(restaurant.google_business_url || '')
-  const [instagram, setInstagram] = useState(restaurant.instagram_handle || '')
-  const [tripadvisor, setTripadvisor] = useState(restaurant.tripadvisor_url || '')
-  const [facebook, setFacebook] = useState(restaurant.facebook_url || '')
+  // Social links state — initialize from social_links JSONB
+  const existingLinks = (restaurant.social_links || {}) as Record<string, string>
+  const [socialLinks, setSocialLinks] = useState<Record<string, string>>(existingLinks)
   const [isSavingSocial, setIsSavingSocial] = useState(false)
+
+  // Track which platforms are visible (defaults + any that have values + any user added)
+  const initialVisible = new Set([
+    ...DEFAULT_PLATFORM_KEYS,
+    ...Object.keys(existingLinks).filter((k) => existingLinks[k]),
+  ])
+  const [visiblePlatforms, setVisiblePlatforms] = useState<Set<string>>(initialVisible)
 
   const handleSaveInfo = async () => {
     if (!name.trim()) {
@@ -56,14 +67,18 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
     setIsSavingSocial(true)
 
     try {
+      // Clean values: trim, remove empty strings, strip @ from handle fields
+      const cleaned: Record<string, string> = {}
+      for (const [key, val] of Object.entries(socialLinks)) {
+        const trimmed = val.trim()
+        if (!trimmed) continue
+        const platform = PLATFORMS[key]
+        cleaned[key] = platform?.prefix ? trimmed.replace(/^@/, '') : trimmed
+      }
+
       const { error } = await supabase
         .from('restaurants')
-        .update({
-          google_business_url: googleUrl.trim() || null,
-          instagram_handle: instagram.trim().replace('@', '') || null,
-          tripadvisor_url: tripadvisor.trim() || null,
-          facebook_url: facebook.trim() || null,
-        })
+        .update({ social_links: cleaned })
         .eq('id', restaurant.id)
 
       if (error) throw error
@@ -74,6 +89,98 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
     } finally {
       setIsSavingSocial(false)
     }
+  }
+
+  const updateLink = (key: string, value: string) => {
+    setSocialLinks((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const addPlatform = (key: string) => {
+    setVisiblePlatforms((prev) => new Set([...prev, key]))
+  }
+
+  const removePlatform = (key: string) => {
+    setVisiblePlatforms((prev) => {
+      const next = new Set(prev)
+      next.delete(key)
+      return next
+    })
+    setSocialLinks((prev) => {
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
+  }
+
+  // Platforms not yet visible that can be added
+  const addablePlatforms = EXTRA_PLATFORM_KEYS.filter(
+    (k) => !visiblePlatforms.has(k)
+  )
+
+  const reviewPlatforms = [...visiblePlatforms].filter(
+    (k) => PLATFORMS[k]?.category === 'review'
+  )
+  const socialPlatforms = [...visiblePlatforms].filter(
+    (k) => PLATFORMS[k]?.category === 'social'
+  )
+
+  const renderPlatformInput = (key: string) => {
+    const platform = PLATFORMS[key]
+    if (!platform) return null
+
+    const isExtra = EXTRA_PLATFORM_KEYS.includes(key)
+    const Icon = platform.icon
+
+    return (
+      <div key={key} className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor={`social-${key}`} className="flex items-center gap-2">
+            <Icon className="h-4 w-4" />
+            {platform.name}
+          </Label>
+          {isExtra && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+              onClick={() => removePlatform(key)}
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
+        {key === 'google' ? (
+          <GooglePlaceIdFinder
+            value={socialLinks[key] || ''}
+            onChange={(v) => updateLink(key, v)}
+            disabled={isSavingSocial}
+          />
+        ) : platform.prefix ? (
+          <div className="flex">
+            <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted border border-r-0 rounded-l-md">
+              {platform.prefix}
+            </span>
+            <Input
+              id={`social-${key}`}
+              value={socialLinks[key] || ''}
+              onChange={(e) => updateLink(key, e.target.value)}
+              placeholder={platform.placeholder}
+              className="rounded-l-none"
+              disabled={isSavingSocial}
+            />
+          </div>
+        ) : (
+          <Input
+            id={`social-${key}`}
+            value={socialLinks[key] || ''}
+            onChange={(e) => updateLink(key, e.target.value)}
+            placeholder={platform.placeholder}
+            disabled={isSavingSocial}
+          />
+        )}
+      </div>
+    )
   }
 
   return (
@@ -141,66 +248,59 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
               <Share2 className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-lg">Link Social</CardTitle>
+              <CardTitle className="text-lg">Link e Recensioni</CardTitle>
               <CardDescription>
-                Aggiungi i link per le recensioni (mostrati dopo feedback positivi)
+                Piattaforme di recensioni (mostrate dopo feedback positivi) e profili social
               </CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="google">Google Business</Label>
-            <Input
-              id="google"
-              value={googleUrl}
-              onChange={(e) => setGoogleUrl(e.target.value)}
-              placeholder="https://search.google.com/local/writereview?placeid=..."
-              disabled={isSavingSocial}
-            />
-            <p className="text-xs text-muted-foreground">
-              Trova il link nelle impostazioni del tuo profilo Google Business
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="instagram">Instagram</Label>
-            <div className="flex">
-              <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted border border-r-0 rounded-l-md">
-                @
-              </span>
-              <Input
-                id="instagram"
-                value={instagram}
-                onChange={(e) => setInstagram(e.target.value)}
-                placeholder="tuoristorante"
-                className="rounded-l-none"
-                disabled={isSavingSocial}
-              />
+        <CardContent className="space-y-6">
+          {/* Review platforms */}
+          {reviewPlatforms.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                Piattaforme di Recensioni
+              </h3>
+              {reviewPlatforms.map(renderPlatformInput)}
             </div>
-          </div>
+          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="tripadvisor">TripAdvisor</Label>
-            <Input
-              id="tripadvisor"
-              value={tripadvisor}
-              onChange={(e) => setTripadvisor(e.target.value)}
-              placeholder="https://www.tripadvisor.it/Restaurant_Review-..."
-              disabled={isSavingSocial}
-            />
-          </div>
+          {/* Social platforms */}
+          {socialPlatforms.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                Social
+              </h3>
+              {socialPlatforms.map(renderPlatformInput)}
+            </div>
+          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="facebook">Facebook</Label>
-            <Input
-              id="facebook"
-              value={facebook}
-              onChange={(e) => setFacebook(e.target.value)}
-              placeholder="https://www.facebook.com/tuoristorante"
-              disabled={isSavingSocial}
-            />
-          </div>
+          {/* Add platform button */}
+          {addablePlatforms.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Aggiungi piattaforma:</p>
+              <div className="flex flex-wrap gap-2">
+                {addablePlatforms.map((key) => {
+                  const platform = PLATFORMS[key]
+                  const Icon = platform.icon
+                  return (
+                    <Button
+                      key={key}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addPlatform(key)}
+                    >
+                      <Icon className="h-3.5 w-3.5 mr-1.5" />
+                      {platform.name}
+                      <Plus className="h-3 w-3 ml-1" />
+                    </Button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end">
             <Button onClick={handleSaveSocial} disabled={isSavingSocial}>

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 6uL5b4nW4G69AXeCoUNmBSmqtl8USKHfnjNBTQgZ1O8nFrpBaSr3z9Nt3ysd2je
+\restrict kCEk3wUZLpPDRPjlxjVifHr5ieuAdlwzr59NaHeiX1DX2yhXbuSfAEw0hXNjSSn
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 18.1
@@ -100,15 +100,12 @@ CREATE TABLE public.restaurants (
     name text NOT NULL,
     slug text NOT NULL,
     logo_url text,
-    google_business_url text,
-    instagram_handle text,
-    tripadvisor_url text,
-    facebook_url text,
     stripe_customer_id text,
     stripe_subscription_id text,
     subscription_status text DEFAULT 'trialing'::text,
     trial_ends_at timestamp with time zone DEFAULT (now() + '7 days'::interval),
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    social_links jsonb DEFAULT '{}'::jsonb
 );
 
 
@@ -130,6 +127,21 @@ CREATE TABLE public.submissions (
 
 
 ALTER TABLE public.submissions OWNER TO postgres;
+
+--
+-- Name: tables; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.tables (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    restaurant_id uuid NOT NULL,
+    name text NOT NULL,
+    identifier text NOT NULL,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.tables OWNER TO postgres;
 
 --
 -- Name: answers answers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
@@ -177,6 +189,22 @@ ALTER TABLE ONLY public.restaurants
 
 ALTER TABLE ONLY public.submissions
     ADD CONSTRAINT submissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tables tables_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tables
+    ADD CONSTRAINT tables_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tables tables_restaurant_id_identifier_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tables
+    ADD CONSTRAINT tables_restaurant_id_identifier_key UNIQUE (restaurant_id, identifier);
 
 
 --
@@ -284,6 +312,14 @@ ALTER TABLE ONLY public.submissions
 
 
 --
+-- Name: tables tables_restaurant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tables
+    ADD CONSTRAINT tables_restaurant_id_fkey FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id) ON DELETE CASCADE;
+
+
+--
 -- Name: answers Public can insert answers; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -340,6 +376,15 @@ CREATE POLICY "Users can delete own questions" ON public.questions FOR DELETE US
 
 
 --
+-- Name: tables Users can delete own tables; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Users can delete own tables" ON public.tables FOR DELETE USING ((EXISTS ( SELECT 1
+   FROM public.restaurants
+  WHERE ((restaurants.id = tables.restaurant_id) AND (restaurants.owner_id = auth.uid())))));
+
+
+--
 -- Name: forms Users can insert own forms; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -366,6 +411,15 @@ CREATE POLICY "Users can insert own restaurant" ON public.restaurants FOR INSERT
 
 
 --
+-- Name: tables Users can insert own tables; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Users can insert own tables" ON public.tables FOR INSERT WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.restaurants
+  WHERE ((restaurants.id = tables.restaurant_id) AND (restaurants.owner_id = auth.uid())))));
+
+
+--
 -- Name: forms Users can update own forms; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -389,6 +443,15 @@ CREATE POLICY "Users can update own questions" ON public.questions FOR UPDATE US
 --
 
 CREATE POLICY "Users can update own restaurant" ON public.restaurants FOR UPDATE USING ((auth.uid() = owner_id));
+
+
+--
+-- Name: tables Users can update own tables; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Users can update own tables" ON public.tables FOR UPDATE USING ((EXISTS ( SELECT 1
+   FROM public.restaurants
+  WHERE ((restaurants.id = tables.restaurant_id) AND (restaurants.owner_id = auth.uid())))));
 
 
 --
@@ -439,6 +502,15 @@ CREATE POLICY "Users can view own submissions" ON public.submissions FOR SELECT 
 
 
 --
+-- Name: tables Users can view own tables; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Users can view own tables" ON public.tables FOR SELECT USING ((EXISTS ( SELECT 1
+   FROM public.restaurants
+  WHERE ((restaurants.id = tables.restaurant_id) AND (restaurants.owner_id = auth.uid())))));
+
+
+--
 -- Name: answers; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
@@ -467,6 +539,12 @@ ALTER TABLE public.restaurants ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.submissions ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: tables; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.tables ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
@@ -521,6 +599,15 @@ GRANT ALL ON TABLE public.restaurants TO service_role;
 GRANT ALL ON TABLE public.submissions TO anon;
 GRANT ALL ON TABLE public.submissions TO authenticated;
 GRANT ALL ON TABLE public.submissions TO service_role;
+
+
+--
+-- Name: TABLE tables; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.tables TO anon;
+GRANT ALL ON TABLE public.tables TO authenticated;
+GRANT ALL ON TABLE public.tables TO service_role;
 
 
 --
@@ -587,5 +674,5 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON T
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 6uL5b4nW4G69AXeCoUNmBSmqtl8USKHfnjNBTQgZ1O8nFrpBaSr3z9Nt3ysd2je
+\unrestrict kCEk3wUZLpPDRPjlxjVifHr5ieuAdlwzr59NaHeiX1DX2yhXbuSfAEw0hXNjSSn
 

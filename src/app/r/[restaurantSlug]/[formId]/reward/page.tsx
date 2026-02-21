@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import type { Restaurant, Form } from '@/types/database.types'
 import { RewardClient } from '@/components/feedback/RewardClient'
 
+export const dynamic = 'force-dynamic'
+
 interface Props {
   params: Promise<{
     restaurantSlug: string

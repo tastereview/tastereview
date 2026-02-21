@@ -5,9 +5,12 @@ interface Props {
     restaurantSlug: string
     formId: string
   }>
+  searchParams: Promise<{ t?: string }>
 }
 
-export default async function FeedbackRedirectPage({ params }: Props) {
+export default async function FeedbackRedirectPage({ params, searchParams }: Props) {
   const { restaurantSlug, formId } = await params
-  redirect(`/r/${restaurantSlug}/${formId}/1`)
+  const { t } = await searchParams
+  const query = t ? `?t=${encodeURIComponent(t)}` : ''
+  redirect(`/r/${restaurantSlug}/${formId}/1${query}`)
 }

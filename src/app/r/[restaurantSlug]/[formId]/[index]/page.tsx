@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import type { Restaurant, Form, Question } from '@/types/database.types'
 import { QuestionPageClient } from '@/components/feedback/QuestionPageClient'
+import { decodeTableId } from '@/lib/utils'
+
+export const dynamic = 'force-dynamic'
 
 interface Props {
   params: Promise<{
@@ -9,16 +12,29 @@ interface Props {
     formId: string
     index: string
   }>
+  searchParams: Promise<{ t?: string }>
 }
 
-export default async function QuestionPage({ params }: Props) {
+export default async function QuestionPage({ params, searchParams }: Props) {
   const { restaurantSlug, formId, index } = await params
+  const { t } = await searchParams
   const questionIndex = parseInt(index, 10)
   const supabase = await createClient()
 
+  // Decode table identifier from URL param
+  let tableIdentifier: string | null = null
+  if (t) {
+    try {
+      tableIdentifier = decodeTableId(t)
+    } catch {
+      // Invalid encoding, ignore
+    }
+  }
+
   // Validate index
   if (isNaN(questionIndex) || questionIndex < 1) {
-    redirect(`/r/${restaurantSlug}/${formId}/1`)
+    const query = t ? `?t=${encodeURIComponent(t)}` : ''
+    redirect(`/r/${restaurantSlug}/${formId}/1${query}`)
   }
 
   // Fetch restaurant
@@ -81,6 +97,8 @@ export default async function QuestionPage({ params }: Props) {
       isLast={isLast}
       formId={formId}
       restaurantSlug={restaurantSlug}
+      tableIdentifier={tableIdentifier}
+      tableParam={t || null}
     />
   )
 }
