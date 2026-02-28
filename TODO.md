@@ -7,66 +7,28 @@
 ## Phase 1: Project Setup
 
 ### 1.1 Initialize Project
-- [x] Create Next.js 14 project with App Router (`npx create-next-app@latest bitereview --typescript --tailwind --eslint --app`)
+- [x] Create Next.js 14 project with App Router
 - [x] Initialize Git repository
 - [x] Create GitHub repository and push initial commit (repo: tastereview)
 - [ ] Connect to Vercel for automatic deployments (skipped for now)
 
 ### 1.2 Install Dependencies
-- [x] Install shadcn/ui (`npx shadcn-ui@latest init`)
-- [x] Install core shadcn components: button, input, card, dialog, dropdown-menu, form, label, progress, sonner (replaced toast), tabs
-- [x] Install Framer Motion (`npm install framer-motion`)
-- [x] Install @dnd-kit (`npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`)
-- [x] Install qrcode and jspdf (`npm install qrcode jspdf @types/qrcode`)
-- [x] Install nanoid (`npm install nanoid`)
-- [x] Install Stripe (`npm install stripe @stripe/stripe-js`)
-- [x] Install Supabase (`npm install @supabase/supabase-js @supabase/ssr`)
-- [x] Install canvas-confetti (`npm install canvas-confetti @types/canvas-confetti`)
-- [x] Install lucide-react for icons (`npm install lucide-react`)
+- [x] shadcn/ui, Framer Motion, @dnd-kit, qrcode + jspdf, nanoid, Stripe, Supabase, canvas-confetti, lucide-react
 
 ### 1.3 Configure Supabase
-- [x] Create Supabase project
-- [x] Set up environment variables in `.env.local`
-- [x] Create Supabase client utilities (`lib/supabase/client.ts`, `lib/supabase/server.ts`, `lib/supabase/middleware.ts`)
-- [x] Create database tables (run SQL from CLAUDE.md schema)
-- [x] Set up Row Level Security policies
-- [x] Enable email/password authentication in Supabase dashboard
+- [x] Create Supabase project + environment variables
+- [x] Create client utilities (`lib/supabase/client.ts`, `server.ts`, `middleware.ts`)
+- [x] Create database tables + RLS policies
+- [x] Enable email/password authentication
 
 ### 1.4 Configure Stripe
-- [x] Create Stripe account (or use test mode)
-- [x] Create product and price (€39/month with 7-day trial)
+- [x] Create Stripe account (test mode) + product/price (€39/month, 7-day trial)
 - [x] Set up environment variables
 - [ ] Create Stripe webhook endpoint in Vercel (skipped for now)
 - [ ] Configure webhook in Stripe dashboard (skipped for now)
 
 ### 1.5 Project Structure
-- [x] Create folder structure:
-  ```
-  src/
-  ├── app/
-  │   ├── (auth)/
-  │   │   ├── login/
-  │   │   └── signup/
-  │   ├── (dashboard)/
-  │   │   └── dashboard/
-  │   ├── r/
-  │   │   └── [restaurantSlug]/
-  │   │       └── [formId]/
-  │   └── api/
-  ├── components/
-  │   ├── ui/ (shadcn)
-  │   ├── auth/
-  │   ├── dashboard/
-  │   ├── feedback/ (customer-facing form)
-  │   └── form-builder/
-  ├── lib/
-  │   ├── supabase/
-  │   ├── stripe/
-  │   └── utils/
-  ├── hooks/
-  └── types/
-  ```
-- [x] Create TypeScript types (`types/database.types.ts`, `types/forms.types.ts`)
+- [x] Create folder structure and TypeScript types
 - [ ] Apply tweakcn theme customization
 
 ---
@@ -74,289 +36,178 @@
 ## Phase 2: Authentication & Onboarding
 
 ### 2.1 Authentication Pages
-- [x] Create login page (`/login`)
-  - [x] Email/password form
-  - [x] Error handling and validation
-  - [x] Redirect to dashboard on success
-  - [x] Link to signup
-- [x] Create signup page (`/signup`)
-  - [x] Email/password form with confirmation
-  - [x] Error handling and validation
-  - [x] Auto-login after signup
-  - [x] Redirect to onboarding
-- [x] Create auth middleware (protect dashboard routes)
+- [x] Login page (`/login`) — email/password, error handling, redirect to dashboard
+- [x] Signup page (`/signup`) — email/password with confirmation, auto-login, redirect to onboarding
+- [x] Auth middleware (protect dashboard routes)
 
 ### 2.2 Restaurant Onboarding
-- [x] Create onboarding page (`/onboarding`)
-  - [x] Step 1: Restaurant name
-  - [x] Step 2: Create URL slug (auto-generate from name, allow edit)
-  - [x] Auto-create restaurant record in database
-  - [x] Auto-create default form with "Quick & Simple" template
-  - [x] Redirect to dashboard
+- [x] Onboarding page (`/onboarding`) — restaurant name + slug, auto-create restaurant + default form
 
 ### 2.3 Auth Utilities
-- [x] Create `useAuth` hook (get current user, loading state)
-- [x] Create `useRestaurant` hook (get current restaurant for logged-in user)
-- [x] Create sign-out functionality
+- [x] `useAuth` hook, `useRestaurant` hook, sign-out functionality
 
 ---
 
-## Phase 3: Dashboard Foundation
+## Phase 3: Dashboard
 
 ### 3.1 Dashboard Layout
-- [x] Create dashboard layout with sidebar navigation
-  - [x] Logo/brand at top
-  - [x] Navigation items: Feedback, Modulo, QR Code, Impostazioni, Abbonamento
-  - [x] User menu with sign out
-- [x] Create responsive mobile navigation (hamburger menu)
+- [x] Sidebar navigation (Feedback, Modulo, QR Code, Impostazioni, Abbonamento)
+- [x] User menu with sign out
+- [x] Responsive mobile navigation (hamburger menu)
 
-### 3.2 Dashboard Home / Feedback List
-- [x] Create feedback list page (`/dashboard` or `/dashboard/feedback`)
-  - [x] Fetch submissions for restaurant
-  - [x] Display in table/list format: date, overall sentiment (icon), preview of first answer
-  - [x] Click to expand/view full submission
-  - [x] Empty state when no submissions
-- [x] Create simple stats section
-  - [x] Total submissions count
-  - [x] Sentiment breakdown (Great/Ok/Bad counts or percentages)
+### 3.2 Dashboard Home (`/dashboard`)
+- [x] Stats cards: ScoreRing (animated SVG, color-coded), sentiment bar, summary (total/today/week/last feedback), sentiment breakdown
+- [x] ScoreRing component (`src/components/dashboard/ScoreRing.tsx`) — ease-out animation, green/yellow/red thresholds
 
-### 3.3 Submission Detail View
-- [x] Create submission detail modal or slide-over
-  - [x] Show all questions and answers
-  - [x] Show timestamp
-  - [x] Show table identifier (if present, for future feature)
+### 3.3 Feedback List (`/dashboard/feedback`)
+- [x] Fetch and display submissions (date, sentiment icon, first answer preview)
+- [x] Click to expand full submission (detail modal with all Q&A, timestamp, table identifier)
+- [x] Empty state when no submissions
+- [x] Period filter (Oggi / 7 giorni / 30 giorni)
+- [x] Sentiment filter (Great / Ok / Bad)
+- [x] Date-grouped sections with headers ("Oggi", "Ieri", "lunedì 17 febbraio")
+- [x] Active filters indicator with "Rimuovi filtri" button
 
 ---
 
 ## Phase 4: Form Builder
 
 ### 4.1 Form Builder Page
-- [x] Create form builder page (`/dashboard/form-builder`)
-- [x] Fetch current form and questions for restaurant
-- [x] Display current form structure
-
-### 4.2 Template Selector
-- [x] Create template selector component
-  - [x] "Quick & Simple" template: Overall sentiment + open comment
-  - [x] "Feedback Dettagliato" template: Overall sentiment + food rating + service rating + open comment
-- [x] Apply template button (replaces current questions with template)
-- [x] Confirmation dialog before replacing
-
-### 4.3 Question List with Drag & Drop
-- [x] Create sortable question list with @dnd-kit
-  - [x] DndContext wrapper
-  - [x] SortableContext with vertical list strategy
-  - [x] Draggable question items with handle
-- [x] Implement reorder logic (update order_index in database)
-- [x] Visual feedback during drag (placeholder, opacity change)
-
-### 4.4 Question Item Component
-- [x] Display question type icon
-- [x] Display question label (truncated if long)
-- [x] Display required indicator
-- [x] Drag handle
-- [x] Edit button (opens editor)
-- [x] Delete button with confirmation
-
-### 4.5 Question Editor
-- [x] Create side panel or modal for editing question
-- [x] Fields:
-  - [x] Label (required)
-  - [x] Description (optional)
-  - [x] Type selector (disabled for existing, only for new)
-  - [x] Required toggle
-  - [x] Options editor (for multiple_choice, single_choice)
-- [x] Save and cancel buttons
-- [x] Real-time validation
-
-### 4.6 Add Question
-- [x] Add question button
-- [x] Type selector dropdown/menu
-- [x] Create question with default values
-- [x] Open editor for new question
-- [x] Enforce max 6 questions limit
-
-### 4.7 Reward Text Editor
-- [x] Text input for reward message
-- [ ] Preview of how it will look (skipped for MVP)
-- [x] Auto-save or explicit save button
+- [x] Form builder page (`/dashboard/form-builder`)
+- [x] Template selector (Quick & Simple, Feedback Dettagliato) with confirmation dialog
+- [x] Sortable question list with @dnd-kit drag & drop
+- [x] Question items: type icon, label, required indicator, drag handle, edit/delete buttons
+- [x] Question editor (side panel): label, description, type, required toggle, options editor
+- [x] Add question menu with type selector, max 6 questions enforced
+- [x] Reward text editor with auto-save
 
 ---
 
 ## Phase 5: Customer Feedback Flow
 
-### 5.1 Route Setup
-- [x] Create route structure: `/r/[restaurantSlug]/[formId]/[index]/page.tsx`
-- [x] Create layout for feedback flow
-- [x] Create redirect from `/r/[restaurantSlug]/[formId]` to `/r/[restaurantSlug]/[formId]/1`
+### 5.1 Route & Layout
+- [x] Route: `/r/[restaurantSlug]/[formId]/[index]/page.tsx`
+- [x] Redirect from `/r/[slug]/[formId]` to `/r/[slug]/[formId]/1`
+- [x] Full-screen centered layout, mobile-optimized, restaurant branding
+- [x] `force-dynamic` on question and reward pages to prevent stale data caching
 
-### 5.2 Data Fetching
-- [x] Fetch restaurant by slug (server component)
-- [x] Fetch form and questions (server component)
-- [x] Handle 404 for invalid slug/form
-- [x] Calculate total questions, current question, navigation URLs
+### 5.2 Question Flow
+- [x] Progress bar with percentage + animated width
+- [x] Framer Motion slide animations (AnimatePresence)
+- [x] Field components: SentimentField, StarRatingField, OpenTextField, MultipleChoiceField, SingleChoiceField
+- [x] Navigation: Back/Next buttons, "Completa" on last question, loading states
 
-### 5.3 Feedback Layout
-- [x] Full-screen centered layout
-- [x] Restaurant branding (logo if available, or name)
-- [x] Clean, minimal design
-- [x] Mobile-optimized
-
-### 5.4 Progress Bar
-- [x] Show current question number and total
-- [x] Percentage progress bar
-- [x] Animated width transitions
-
-### 5.5 Animated Question Wrapper
-- [x] Framer Motion AnimatePresence
-- [x] Slide animation: `x: 50 → 0 → -50`
-- [x] Key based on question index for re-animation
-
-### 5.6 Question Screen
-- [x] Large question label as heading
-- [x] Helper text (description) if present
-- [x] Required indicator
-- [x] Field component based on type
-- [x] Validation error display
-
-### 5.7 Field Components
-- [x] **SentimentField**: Three large buttons (Bad, Ok, Great)
-- [x] **StarRatingField**: 5 clickable stars with hover effect
-- [x] **OpenTextField**: Large textarea with character count
-- [x] **MultipleChoiceField**: Styled checkboxes
-- [x] **SingleChoiceField**: Styled radio buttons
-- [x] All fields: consistent styling, large touch targets, focus states
-
-### 5.8 Navigation
-- [x] Back button (hidden on first question)
-- [x] Next button (shows "Completa" on last question)
-- [x] Loading states during save
-- [ ] Keyboard navigation (Enter to proceed) - skipped for MVP
-
-### 5.9 Answer Persistence
-- [x] Create submission on first question (if not exists)
-- [x] Save answer to database on "Next"
+### 5.3 Answer Persistence
+- [x] Create submission on first question, save answers on "Next"
 - [x] Track overall_sentiment from sentiment question
 - [x] Update submission with completed_at on final submit
+- [x] Table identifier decoded from `?t=` URL param and stored in submission
 
-### 5.10 Reward Screen
-- [x] Create reward page (`/r/[restaurantSlug]/[formId]/reward`)
+### 5.4 Reward Screen
+- [x] Reward page (`/r/[slug]/[formId]/reward`) with confetti animation
 - [x] Display reward text from form settings
-- [x] Trigger confetti animation on load
-- [x] Conditional social buttons:
-  - [x] If sentiment === 'great': Show all configured platforms
-  - [x] If sentiment !== 'great': Show only reward, maybe "Seguici su Instagram" softly
-- [x] Social button components with proper deep links
+- [x] If sentiment === 'great': show review platform buttons (from social_links JSONB)
+- [x] Always show social platform buttons as "Seguici" section
+- [x] Sentiment read from useState initializer (not useEffect) to avoid React Strict Mode double-run bug
 
 ---
 
 ## Phase 6: QR Code Generation
 
-### 6.1 QR Code Page
-- [x] Create QR code page (`/dashboard/qr-codes`)
-- [x] Generate QR code with `qrcode` library
-- [x] Display QR code preview on page
-- [x] Show the URL that's encoded
+### 6.1 General QR Code
+- [x] QR code page (`/dashboard/qr-codes`)
+- [x] Generate QR with `qrcode` library (error correction H)
+- [x] Display preview + encoded URL
+- [x] PDF download with jspdf (restaurant name + instruction text)
 
-### 6.2 PDF Download
-- [x] Create PDF with jspdf
-- [x] Include QR code centered
-- [x] Include restaurant name
-- [x] Include instruction text (e.g., "Scansiona per lasciare un feedback")
-- [x] Download button
-
-### 6.3 QR Code Styling (MVP)
-- [x] Basic black & white QR code
-- [x] Appropriate size for print (minimum 2cm x 2cm recommended)
-- [x] Error correction level H (high) for better scannability
+### 6.2 Table QR Codes
+- [x] `tables` DB table with RLS (owner-only CRUD)
+- [x] TableManager component — add/delete tables with auto-generated URL-safe identifiers
+- [x] Per-table QR grid on QR codes page
+- [x] Table identifier base64url-encoded in URL as `?t=...` (encodeTableId/decodeTableId in `src/lib/utils.ts`)
+- [x] Individual table QR PDF download
+- [x] Bulk "Scarica tutti (PDF)" download
 
 ---
 
 ## Phase 7: Settings
 
 ### 7.1 Settings Page
-- [x] Create settings page (`/dashboard/settings`)
-- [x] Sections: Restaurant Info, Social Links
+- [x] Settings page (`/dashboard/settings`) — Restaurant Info + Social Links sections
 
-### 7.2 Restaurant Info Section
-- [x] Edit restaurant name
-- [x] Edit/view slug (maybe read-only after creation)
-- [ ] Upload logo (Supabase Storage) - skipped for MVP
+### 7.2 Restaurant Info
+- [x] Edit restaurant name and slug
+- [ ] Upload logo (Supabase Storage) — skipped for MVP
 - [x] Save button with loading state
 
-### 7.3 Social Links Section
-- [x] Google Business URL input (with helper text on how to find it)
-- [x] Instagram handle input (just handle, not full URL)
-- [x] TripAdvisor URL input
-- [x] Facebook URL input
-- [x] Save button
-- [ ] Validation (URL format where applicable) - basic validation only
+### 7.3 Flexible Social Links
+- [x] Replaced 4 hardcoded social columns with single `social_links` JSONB column on restaurants
+- [x] 11 platforms defined in `src/lib/constants/platforms.ts`:
+  - Review: Google, TripAdvisor, TheFork, Yelp, Trustpilot
+  - Social: Instagram, Facebook, TikTok, YouTube, X/Twitter, LinkedIn
+  - Each with: icon, name, category, placeholder, buildUrl(), buttonColor
+- [x] Settings page dynamically renders platforms — 6 defaults always shown, extras addable
+- [x] Google uses GooglePlaceIdFinder component (stores Place ID, not URL)
+- [x] Reward screen reads from social_links JSONB, filters by category
 
 ---
 
 ## Phase 8: Stripe Integration
 
-### 8.1 Subscription Status
-- [x] Check subscription status on dashboard load
-- [ ] If trial expired and no active subscription: show upgrade prompt - skipped for MVP
-- [x] Display trial days remaining in dashboard
+### 8.1 Subscription Management
+- [x] Check subscription status on dashboard load + display trial days remaining
+- [x] Billing page (`/dashboard/billing`) — Checkout + Customer Portal buttons
+- [x] Stripe Checkout session creation with trial
+- [x] Stripe Customer Portal session + redirect
+- [ ] Show upgrade prompt if trial expired — skipped for MVP
 
-### 8.2 Checkout Flow
-- [x] Create billing page (`/dashboard/billing`)
-- [x] "Abbonati ora" button → Stripe Checkout
-- [x] Create Checkout session with trial if eligible
-- [x] Success/cancel redirect URLs
+### 8.2 Webhook Handler
+- [x] Webhook route (`/api/webhooks/stripe`) with signature verification
+- [x] Handle: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`
 
-### 8.3 Customer Portal
-- [x] "Gestisci abbonamento" button → Stripe Customer Portal
-- [x] Create portal session and redirect
-
-### 8.4 Webhook Handler
-- [x] Create webhook route (`/api/webhooks/stripe`)
-- [x] Verify webhook signature
-- [x] Handle `checkout.session.completed`: Update subscription info
-- [x] Handle `customer.subscription.updated`: Update status
-- [x] Handle `customer.subscription.deleted`: Mark as cancelled
-- [x] Handle `invoice.payment_failed`: Mark as past_due
-
-### 8.5 Access Control
-- [ ] Middleware to check subscription status - skipped for MVP
-- [ ] Allow access during trial - skipped for MVP
-- [ ] Block dashboard access if subscription inactive (except billing page) - skipped for MVP
-- [ ] Show appropriate messaging for expired/cancelled - skipped for MVP
+### 8.3 Access Control
+- [ ] Middleware subscription status checks — skipped for MVP
+- [ ] Block dashboard if subscription inactive (except billing) — skipped for MVP
 
 ---
 
-## Phase 9: Polish & Launch Prep
+## Phase 9: Critical Fixes
 
-### 9.1 Error Handling
-- [ ] Global error boundary
-- [ ] API error responses (consistent format)
+### 9.1 RLS: Public Restaurant Access
+- [x] Add public SELECT policy on `restaurants` table (allows anyone to SELECT, write still owner-only)
+- [x] Feedback flow (`/r/[slug]/...`) now works for unauthenticated customers
+
+---
+
+## Phase 10: Polish & Launch Prep
+
+### 10.1 Error Handling
+- [ ] Global error boundary (`error.tsx`)
+- [ ] 404 page (`not-found.tsx`)
 - [ ] User-friendly error messages in Italian
-- [ ] 404 page
 - [ ] Loading skeletons for all async content
 
-### 9.2 SEO & Meta
-- [ ] Landing page meta tags
-- [ ] OpenGraph images
-- [ ] Favicon
-- [ ] robots.txt
-- [ ] sitemap.xml (basic)
-
-### 9.3 Legal Pages
-- [ ] Privacy Policy page (`/privacy`)
-- [ ] Terms of Service page (`/terms`)
-- [ ] Cookie banner (if needed)
-- [ ] Links in footer and signup flow
-
-### 9.4 Landing Page
+### 10.2 Landing Page
 - [ ] Hero section with value proposition
 - [ ] How it works (3 steps)
 - [ ] Pricing section (single plan)
 - [ ] CTA to signup
 - [ ] Footer with legal links
 
-### 9.5 Final Testing
+### 10.3 SEO & Meta
+- [ ] Per-page meta tags (root layout has basic metadata already)
+- [ ] OpenGraph images
+- [ ] Favicon
+- [ ] robots.txt
+- [ ] sitemap.xml
+
+### 10.4 Legal Pages
+- [ ] Privacy Policy page (`/privacy`)
+- [ ] Terms of Service page (`/terms`)
+- [ ] Cookie banner (if needed)
+- [ ] Links in footer and signup flow
+
+### 10.5 Final Testing
 - [ ] Test complete signup flow
 - [ ] Test form builder (all question types)
 - [ ] Test customer feedback flow (all question types)
@@ -365,10 +216,11 @@
 - [ ] Test on mobile devices
 - [ ] Test edge cases (empty form, max questions, etc.)
 
-### 9.6 Launch
+### 10.6 Launch
 - [ ] Set up production environment variables
 - [ ] Configure custom domain
 - [ ] Enable Stripe live mode
+- [ ] Connect Vercel for auto-deploy
 - [ ] Final deployment
 - [ ] Monitor for errors
 
@@ -378,5 +230,4 @@
 
 - Keep this file updated as you complete tasks
 - If you discover new tasks, add them in the appropriate phase
-- If a task is blocked, note the blocker
 - Prioritize completing phases in order, but small fixes can be done anytime
