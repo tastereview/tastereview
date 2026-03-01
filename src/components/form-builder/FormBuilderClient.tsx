@@ -46,8 +46,8 @@ export function FormBuilderClient({
           .update({ order_index: update.order_index })
           .eq('id', update.id)
       }
-    } catch (error) {
-      console.error('Failed to update order:', error)
+    } catch {
+      console.error('Failed to update order')
       toast.error('Errore nel salvare l\'ordine')
     } finally {
       setIsSaving(false)
@@ -74,8 +74,8 @@ export function FormBuilderClient({
 
       if (error) throw error
       toast.success('Domanda aggiornata')
-    } catch (error) {
-      console.error('Failed to update question:', error)
+    } catch {
+      console.error('Failed to update question')
       toast.error('Errore nel salvare la domanda')
     } finally {
       setIsSaving(false)
@@ -94,8 +94,8 @@ export function FormBuilderClient({
 
       if (error) throw error
       toast.success('Domanda eliminata')
-    } catch (error) {
-      console.error('Failed to delete question:', error)
+    } catch {
+      console.error('Failed to delete question')
       toast.error('Errore nell\'eliminare la domanda')
     } finally {
       setIsSaving(false)
@@ -129,8 +129,8 @@ export function FormBuilderClient({
 
       setQuestions((prev) => [...prev, data as Question])
       toast.success('Domanda aggiunta')
-    } catch (error) {
-      console.error('Failed to add question:', error)
+    } catch {
+      console.error('Failed to add question')
       toast.error('Errore nell\'aggiungere la domanda')
     } finally {
       setIsSaving(false)
@@ -164,8 +164,8 @@ export function FormBuilderClient({
 
       setQuestions((data || []) as Question[])
       toast.success('Template applicato')
-    } catch (error) {
-      console.error('Failed to apply template:', error)
+    } catch {
+      console.error('Failed to apply template')
       toast.error('Errore nell\'applicare il template')
     } finally {
       setIsSaving(false)
@@ -186,8 +186,8 @@ export function FormBuilderClient({
 
       setCurrentForm((prev) => (prev ? { ...prev, reward_text: rewardText } : null))
       toast.success('Messaggio premio aggiornato')
-    } catch (error) {
-      console.error('Failed to update reward text:', error)
+    } catch {
+      console.error('Failed to update reward text')
       toast.error('Errore nel salvare il messaggio')
     } finally {
       setIsSaving(false)

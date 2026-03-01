@@ -137,8 +137,8 @@ export function QRCodeClient({
         const filename = `qr-${label.toLowerCase().replace(/\s+/g, '-')}.pdf`
         pdf.save(filename)
         toast.success('PDF scaricato!')
-      } catch (error) {
-        console.error('Failed to generate PDF:', error)
+      } catch {
+        console.error('Failed to generate PDF')
         toast.error('Errore nel generare il PDF')
       } finally {
         setIsGenerating(false)

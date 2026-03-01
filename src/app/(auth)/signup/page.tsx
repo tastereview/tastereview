@@ -24,9 +24,21 @@ export default function SignupPage() {
     e.preventDefault()
     setError(null)
 
-    // Validation
-    if (password.length < 6) {
-      setError('La password deve essere di almeno 6 caratteri')
+    // Password validation
+    if (password.length < 8) {
+      setError('La password deve essere di almeno 8 caratteri')
+      return
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError('La password deve contenere almeno una lettera maiuscola')
+      return
+    }
+    if (!/[0-9]/.test(password)) {
+      setError('La password deve contenere almeno un numero')
+      return
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/~`]/.test(password)) {
+      setError('La password deve contenere almeno un carattere speciale')
       return
     }
 
@@ -95,7 +107,7 @@ export default function SignupPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Minimo 6 caratteri"
+                placeholder="Min 8 caratteri, maiuscola, numero, speciale"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

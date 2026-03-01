@@ -58,12 +58,17 @@ export function RewardClient({ restaurant, form }: RewardClientProps) {
   const showReviewButtons = sentiment === 'great'
 
   // Build review and social link arrays from social_links JSONB
+  // Defense-in-depth: only render links with safe URL schemes
+  const isSafeUrl = (url: string) =>
+    url.startsWith('https://') || url.startsWith('http://')
+
   const reviewLinks = Object.entries(links)
     .filter(([key, val]) => val && PLATFORMS[key]?.category === 'review')
     .map(([key, val]) => ({
       platform: PLATFORMS[key],
       url: PLATFORMS[key].buildUrl(val),
     }))
+    .filter(({ url }) => isSafeUrl(url))
 
   const socialFollowLinks = Object.entries(links)
     .filter(([key, val]) => val && PLATFORMS[key]?.category === 'social')
@@ -71,6 +76,7 @@ export function RewardClient({ restaurant, form }: RewardClientProps) {
       platform: PLATFORMS[key],
       url: PLATFORMS[key].buildUrl(val),
     }))
+    .filter(({ url }) => isSafeUrl(url))
 
   return (
     <div className="flex-1 flex items-center justify-center p-4">

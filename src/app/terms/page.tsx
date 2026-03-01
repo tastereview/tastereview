@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Termini di Servizio — TasteReview',
+  title: 'Termini di Servizio — 5stelle',
 }
 
 export default function TermsPage() {
@@ -30,7 +30,7 @@ export default function TermsPage() {
             <ul className="list-disc pl-5 space-y-1">
               <li>
                 <strong>&ldquo;Servizio&rdquo;</strong>: la piattaforma
-                TasteReview, accessibile via web, che consente ai ristoratori di
+                5stelle, accessibile via web, che consente ai ristoratori di
                 raccogliere feedback dai propri clienti tramite QR code.
               </li>
               <li>
@@ -67,7 +67,7 @@ export default function TermsPage() {
             <h2 className="text-lg font-semibold text-foreground">
               3. Descrizione del servizio
             </h2>
-            <p>TasteReview offre le seguenti funzionalità:</p>
+            <p>5stelle offre le seguenti funzionalità:</p>
             <ul className="list-disc pl-5 space-y-1">
               <li>
                 Creazione di moduli di feedback personalizzabili

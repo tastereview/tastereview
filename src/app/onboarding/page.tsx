@@ -122,7 +122,7 @@ export default function OnboardingPage() {
         .single()
 
       if (restaurantError) {
-        console.error('Restaurant creation error:', restaurantError)
+        console.error('Restaurant creation error')
         setError('Errore nella creazione del ristorante. Riprova.')
         setIsLoading(false)
         return
@@ -142,7 +142,7 @@ export default function OnboardingPage() {
         .single()
 
       if (formError) {
-        console.error('Form creation error:', formError)
+        console.error('Form creation error')
         // Continue anyway, user can create form later
       } else {
         // Create default questions
@@ -162,8 +162,8 @@ export default function OnboardingPage() {
 
       router.push('/dashboard')
       router.refresh()
-    } catch (err) {
-      console.error('Onboarding error:', err)
+    } catch {
+      console.error('Onboarding error')
       setError('Si è verificato un errore. Riprova.')
     } finally {
       setIsLoading(false)

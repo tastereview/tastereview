@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — TasteReview',
+  title: 'Privacy Policy — 5stelle',
 }
 
 export default function PrivacyPage() {
@@ -154,7 +154,7 @@ export default function PrivacyPage() {
               6. Cookie
             </h2>
             <p>
-              TasteReview utilizza esclusivamente{' '}
+              5stelle utilizza esclusivamente{' '}
               <strong>cookie tecnici necessari</strong> al funzionamento del
               servizio (autenticazione e gestione della sessione). Questi cookie
               non richiedono il consenso ai sensi dell&apos;Art. 5.3 della

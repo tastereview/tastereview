@@ -1,8 +1,8 @@
-# TasteReview - Development Guide
+# 5stelle - Development Guide
 
 ## Project
 
-**TasteReview** — B2B SaaS for restaurants to collect customer feedback via QR codes. Happy customers get funneled to public review platforms; negative feedback stays private. Italian only (MVP).
+**5stelle** — B2B SaaS for restaurants to collect customer feedback via QR codes. Happy customers get funneled to public review platforms; negative feedback stays private. Italian only (MVP).
 
 | Layer | Tech |
 |-|-|

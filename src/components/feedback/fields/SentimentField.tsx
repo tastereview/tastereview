@@ -6,9 +6,9 @@ import { cn } from '@/lib/utils'
 import { Frown, Meh, Smile } from 'lucide-react'
 
 const sentiments: { value: Sentiment; label: string; icon: typeof Smile; color: string }[] = [
-  { value: 'bad', label: 'Male', icon: Frown, color: 'text-red-500 border-red-200 bg-red-50 hover:bg-red-100' },
+  { value: 'bad', label: 'Negativa', icon: Frown, color: 'text-red-500 border-red-200 bg-red-50 hover:bg-red-100' },
   { value: 'ok', label: 'Ok', icon: Meh, color: 'text-yellow-500 border-yellow-200 bg-yellow-50 hover:bg-yellow-100' },
-  { value: 'great', label: 'Ottimo', icon: Smile, color: 'text-green-500 border-green-200 bg-green-50 hover:bg-green-100' },
+  { value: 'great', label: 'Positiva', icon: Smile, color: 'text-green-500 border-green-200 bg-green-50 hover:bg-green-100' },
 ]
 
 export function SentimentField({ value, onChange, error }: FieldProps) {

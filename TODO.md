@@ -1,4 +1,4 @@
-# TasteReview - Implementation Plan
+# 5stelle - Implementation Plan
 
 > **IMPORTANT:** Read this file at the start of every new chat session. Follow tasks in order. Mark tasks as complete with `[x]` when done.
 

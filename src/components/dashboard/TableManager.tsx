@@ -69,8 +69,8 @@ export function TableManager({
       updateTables([...tables, data as Table])
       setNewTableName('')
       toast.success('Tavolo aggiunto')
-    } catch (error) {
-      console.error('Failed to add table:', error)
+    } catch {
+      console.error('Failed to add table')
       toast.error('Errore nell\'aggiungere il tavolo')
     } finally {
       setIsAdding(false)
@@ -85,8 +85,8 @@ export function TableManager({
       if (error) throw error
       updateTables(tables.filter((t) => t.id !== id))
       toast.success('Tavolo eliminato')
-    } catch (error) {
-      console.error('Failed to delete table:', error)
+    } catch {
+      console.error('Failed to delete table')
       toast.error('Errore nell\'eliminare il tavolo')
     } finally {
       setDeletingId(null)

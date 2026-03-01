@@ -8,6 +8,8 @@ import type { AnswerValue } from '@/types/forms.types'
 import { ProgressBar } from './ProgressBar'
 import { QuestionScreen } from './QuestionScreen'
 import { NavigationButtons } from './NavigationButtons'
+import { Turnstile } from '@marsidev/react-turnstile'
+import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 
 interface QuestionPageClientProps {
@@ -48,6 +50,10 @@ export function QuestionPageClient({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward')
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  const showTurnstile = isLast && !isPreview && !!turnstileSiteKey
 
   const queryParts: string[] = []
   if (tableParam) queryParts.push(`t=${encodeURIComponent(tableParam)}`)
@@ -162,6 +168,22 @@ export function QuestionPageClient({
 
       if (isLast) {
         if (!isPreview) {
+          // Verify Turnstile token if configured
+          if (turnstileSiteKey && turnstileToken) {
+            const verifyRes = await fetch('/api/verify-turnstile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: turnstileToken }),
+            })
+            const verifyData = await verifyRes.json()
+
+            if (!verifyData.success) {
+              toast.error('Verifica di sicurezza fallita. Riprova.')
+              setIsSubmitting(false)
+              return
+            }
+          }
+
           // Mark submission as complete
           const { error: completeError } = await supabase
             .from('submissions')
@@ -174,8 +196,8 @@ export function QuestionPageClient({
       } else {
         router.push(`/r/${restaurantSlug}/${formId}/${questionIndex + 1}${navQuery}`)
       }
-    } catch (err) {
-      console.error('Failed to save answer:', err)
+    } catch {
+      console.error('Failed to save answer')
       setError('Errore nel salvare la risposta. Riprova.')
     } finally {
       setIsSubmitting(false)
@@ -229,10 +251,19 @@ export function QuestionPageClient({
         </AnimatePresence>
       </div>
 
+      {showTurnstile && (
+        <Turnstile
+          siteKey={turnstileSiteKey}
+          options={{ size: 'invisible' }}
+          onSuccess={setTurnstileToken}
+        />
+      )}
+
       <NavigationButtons
         isFirst={isFirst}
         isLast={isLast}
         isSubmitting={isSubmitting}
+        isVerifying={showTurnstile && !turnstileToken}
         onBack={handleBack}
         onNext={handleNext}
       />

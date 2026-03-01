@@ -142,7 +142,7 @@ export function FeedbackDetailDialog({
       ])
 
       if (answersResult.error || questionsResult.error) {
-        console.error('Failed to load feedback details:', answersResult.error || questionsResult.error)
+        console.error('Failed to load feedback details')
         setIsLoading(false)
         return
       }

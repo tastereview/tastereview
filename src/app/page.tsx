@@ -338,7 +338,7 @@ export default function Home() {
       <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link href="/" className="text-xl font-bold tracking-tight">
-            TasteReview
+            5stelle
           </Link>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild>
@@ -400,7 +400,7 @@ export default function Home() {
             Da zero a feedback in 3 passi
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Bastano pochi minuti per configurare TasteReview e iniziare a
+            Bastano pochi minuti per configurare 5stelle e iniziare a
             raccogliere feedback dai tuoi clienti.
           </p>
         </motion.div>
@@ -572,7 +572,7 @@ export default function Home() {
             <br className="hidden sm:block" /> in automatico
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Il cuore di TasteReview: i clienti soddisfatti vengono guidati a
+            Il cuore di 5stelle: i clienti soddisfatti vengono guidati a
             lasciare recensioni pubbliche. I feedback negativi restano privati,
             solo per te.
           </p>
@@ -831,7 +831,7 @@ export default function Home() {
             Pronto a migliorare le tue recensioni?
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Unisciti ai ristoratori che già usano TasteReview per trasformare il
+            Unisciti ai ristoratori che già usano 5stelle per trasformare il
             feedback dei clienti in crescita reale.
           </p>
           <div className="mt-10 flex flex-col items-center gap-4">
@@ -855,7 +855,7 @@ export default function Home() {
       {/* ── Footer ── */}
       <footer className="border-t py-12">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-6 text-sm text-muted-foreground sm:flex-row sm:justify-between">
-          <p className="font-medium text-foreground">TasteReview</p>
+          <p className="font-medium text-foreground">5stelle</p>
           <div className="flex gap-6">
             <Link
               href="/privacy"
@@ -871,7 +871,7 @@ export default function Home() {
             </Link>
           </div>
           <p>
-            &copy; {new Date().getFullYear()} TasteReview. Tutti i diritti
+            &copy; {new Date().getFullYear()} 5stelle. Tutti i diritti
             riservati.
           </p>
         </div>

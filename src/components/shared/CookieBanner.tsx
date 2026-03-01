@@ -8,11 +8,14 @@ export function CookieBanner() {
     <CookieConsent
       location="bottom"
       buttonText="Ho capito"
-      cookieName="tastereview_cookie_consent"
+      cookieName="5stelle_cookie_consent"
       style={{
-        background: 'hsl(var(--card))',
+        background: 'hsl(var(--card) / 0.7)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         color: 'hsl(var(--card-foreground))',
-        borderTop: '1px solid hsl(var(--border))',
+        borderTop: '2px solid rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.1)',
         padding: '12px 24px',
         alignItems: 'center',
         fontSize: '14px',

@@ -1,4 +1,4 @@
-# TasteReview - Architecture Reference
+# 5stelle - Architecture Reference
 
 Reference material for detailed implementation work. Don't read top-to-bottom — search for the section you need.
 

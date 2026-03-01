@@ -60,8 +60,8 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
       toast.success('Informazioni salvate')
       setSavedInfo(true)
       setTimeout(() => setSavedInfo(false), 2000)
-    } catch (error) {
-      console.error('Failed to save info:', error)
+    } catch {
+      console.error('Failed to save info')
       toast.error('Errore nel salvare le informazioni')
     } finally {
       setIsSavingInfo(false)
@@ -78,7 +78,44 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
         const trimmed = val.trim()
         if (!trimmed) continue
         const platform = PLATFORMS[key]
-        cleaned[key] = platform?.prefix ? trimmed.replace(/^@/, '') : trimmed
+        const value = platform?.prefix ? trimmed.replace(/^@/, '') : trimmed
+        cleaned[key] = value
+      }
+
+      // Validate per platform type
+      for (const [key, value] of Object.entries(cleaned)) {
+        const platform = PLATFORMS[key]
+        if (!platform) continue
+
+        if (key === 'google') {
+          // Google Place IDs start with "ChIJ"
+          if (!value.startsWith('ChIJ')) {
+            toast.error(`${platform.name}: Place ID non valido (deve iniziare con "ChIJ")`)
+            setIsSavingSocial(false)
+            return
+          }
+        } else if (platform.prefix) {
+          // Handle-based: instagram, tiktok, twitter — alphanumeric + underscores/dots
+          if (!/^[a-zA-Z0-9._]{1,50}$/.test(value)) {
+            toast.error(`${platform.name}: username non valido (solo lettere, numeri, punti e underscore)`)
+            setIsSavingSocial(false)
+            return
+          }
+        } else {
+          // Full URL platforms — must be https://
+          try {
+            const url = new URL(value)
+            if (!['https:', 'http:'].includes(url.protocol)) {
+              toast.error(`${platform.name}: l'URL deve iniziare con https://`)
+              setIsSavingSocial(false)
+              return
+            }
+          } catch {
+            toast.error(`${platform.name}: URL non valido`)
+            setIsSavingSocial(false)
+            return
+          }
+        }
       }
 
       const { error } = await supabase
@@ -90,8 +127,8 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
       toast.success('Link social salvati')
       setSavedSocial(true)
       setTimeout(() => setSavedSocial(false), 2000)
-    } catch (error) {
-      console.error('Failed to save social links:', error)
+    } catch {
+      console.error('Failed to save social links')
       toast.error('Errore nel salvare i link')
     } finally {
       setIsSavingSocial(false)

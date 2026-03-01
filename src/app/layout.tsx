@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TasteReview - Raccogli feedback dal tuo ristorante",
+  title: "5stelle - Raccogli feedback dal tuo ristorante",
   description: "Trasforma i feedback dei clienti in recensioni positive. QR code per raccogliere opinioni e indirizzare i clienti soddisfatti verso le piattaforme di recensioni.",
 };
 

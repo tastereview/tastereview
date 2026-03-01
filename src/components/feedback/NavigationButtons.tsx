@@ -7,6 +7,7 @@ interface NavigationButtonsProps {
   isFirst: boolean
   isLast: boolean
   isSubmitting: boolean
+  isVerifying?: boolean
   onBack: () => void
   onNext: () => void
 }
@@ -15,6 +16,7 @@ export function NavigationButtons({
   isFirst,
   isLast,
   isSubmitting,
+  isVerifying = false,
   onBack,
   onNext,
 }: NavigationButtonsProps) {
@@ -30,8 +32,13 @@ export function NavigationButtons({
         Indietro
       </Button>
 
-      <Button onClick={onNext} disabled={isSubmitting} className="min-w-[120px]">
-        {isSubmitting ? (
+      <Button onClick={onNext} disabled={isSubmitting || isVerifying} className="min-w-[120px]">
+        {isVerifying ? (
+          <>
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            Verifica in corso...
+          </>
+        ) : isSubmitting ? (
           <>
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             {isLast ? 'Invio...' : 'Salvo...'}

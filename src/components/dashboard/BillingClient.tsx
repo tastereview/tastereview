@@ -47,8 +47,8 @@ export function BillingClient({ restaurant, trialDaysRemaining }: BillingClientP
 
       // Redirect to Stripe Checkout
       window.location.href = data.url
-    } catch (error) {
-      console.error('Checkout error:', error)
+    } catch {
+      console.error('Checkout error')
       toast.error('Errore nel creare la sessione di pagamento')
     } finally {
       setIsLoading(false)
@@ -78,8 +78,8 @@ export function BillingClient({ restaurant, trialDaysRemaining }: BillingClientP
 
       // Redirect to Stripe Customer Portal
       window.location.href = data.url
-    } catch (error) {
-      console.error('Portal error:', error)
+    } catch {
+      console.error('Portal error')
       toast.error('Errore nel aprire il portale')
     } finally {
       setIsManaging(false)
@@ -98,7 +98,7 @@ export function BillingClient({ restaurant, trialDaysRemaining }: BillingClientP
             <div>
               <CardTitle className="text-lg">Piano Attuale</CardTitle>
               <CardDescription>
-                Il tuo abbonamento TasteReview
+                Il tuo abbonamento 5stelle
               </CardDescription>
             </div>
           </div>
@@ -135,7 +135,7 @@ export function BillingClient({ restaurant, trialDaysRemaining }: BillingClientP
           {!hasActiveSubscription ? (
             <div className="text-center space-y-4">
               <div>
-                <h3 className="font-medium text-lg">Abbonati a TasteReview</h3>
+                <h3 className="font-medium text-lg">Abbonati a 5stelle</h3>
                 <p className="text-muted-foreground text-sm">
                   {isTrialing && trialDaysRemaining > 0
                     ? 'Attiva il tuo abbonamento per continuare dopo la prova'
