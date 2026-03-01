@@ -1,4 +1,10 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+
+export const metadata: Metadata = {
+  title: 'Grazie!',
+  robots: { index: false, follow: false },
+}
 import { notFound } from 'next/navigation'
 import type { Restaurant, Form } from '@/types/database.types'
 import { RewardClient } from '@/components/feedback/RewardClient'

@@ -1,4 +1,10 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+
+export const metadata: Metadata = {
+  title: 'Modulo Feedback',
+  robots: { index: false, follow: false },
+}
 import { redirect } from 'next/navigation'
 import type { Restaurant, Form, Question } from '@/types/database.types'
 import { FormBuilderClient } from '@/components/form-builder/FormBuilderClient'

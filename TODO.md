@@ -195,11 +195,11 @@
 - [x] Footer with legal links
 
 ### 10.3 SEO & Meta
-- [ ] Per-page meta tags (root layout has basic metadata already)
-- [ ] OpenGraph images
-- [ ] Favicon
-- [ ] robots.txt
-- [ ] sitemap.xml
+- [x] Per-page meta tags (root layout has basic metadata already)
+- [ ] OpenGraph images — add `/public/og-image.png` (1200x630) and uncomment in layout.tsx
+- [ ] Favicon — add to `/public` or `src/app/`
+- [x] robots.txt
+- [x] sitemap.xml
 
 ### 10.4 Legal Pages
 - [x] Privacy Policy page (`/privacy`)

@@ -1,4 +1,10 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+
+export const metadata: Metadata = {
+  title: 'QR Code',
+  robots: { index: false, follow: false },
+}
 import { redirect } from 'next/navigation'
 import type { Restaurant, Form, Table } from '@/types/database.types'
 import { QRCodeClient } from '@/components/dashboard/QRCodeClient'
