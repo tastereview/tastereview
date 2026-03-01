@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { CookieBanner } from "@/components/shared/CookieBanner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,6 +31,7 @@ export default function RootLayout({
       >
         {children}
         <Toaster position="top-center" richColors />
+        <CookieBanner />
       </body>
     </html>
   );

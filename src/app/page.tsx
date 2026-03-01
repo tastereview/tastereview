@@ -108,9 +108,10 @@ const qrPattern = [
 /* ─── Animated illustrations ─── */
 
 function AnimatedStars() {
-  const cycleDuration = 4;
-  const appearEnd = 0.35; // stars fully visible at 35%
-  const holdEnd = 0.8; // start fading at 80%
+  const cycleDuration = 5;
+  const appearEnd = 0.25; // stars fully visible at 25% (1.25s)
+  const holdEnd = 0.88; // start fading at 88% (4.4s)
+  // Fade-out is only 0.6s (12% of 5s), so stars reappear almost immediately
 
   return (
     <div className="relative mb-8 inline-flex items-center gap-1.5 overflow-hidden py-2 sm:gap-2.5">
@@ -127,7 +128,7 @@ function AnimatedStars() {
             times: [0, appearEnd, holdEnd, 1],
             delay: i * 0.15,
             repeat: Infinity,
-            repeatDelay: 0.5,
+            repeatDelay: 0,
             ease: "easeInOut",
           }}
         >
@@ -142,7 +143,7 @@ function AnimatedStars() {
           duration: 0.7,
           delay: 1.3,
           repeat: Infinity,
-          repeatDelay: cycleDuration - 0.7 + 0.5,
+          repeatDelay: cycleDuration - 0.7,
           ease: "easeInOut",
         }}
       />
@@ -332,7 +333,7 @@ function DashboardIllustration() {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       {/* Navbar */}
       <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">

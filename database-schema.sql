@@ -1,11 +1,11 @@
-﻿--
+--
 -- PostgreSQL database dump
 --
 
-\restrict kCEk3wUZLpPDRPjlxjVifHr5ieuAdlwzr59NaHeiX1DX2yhXbuSfAEw0hXNjSSn
+\restrict 4ILHXAlOnVKep8W65GGeGbil4s4NUpQ1AF7yaWlIa9W3zXoOdkJNamb13eE9Hqo
 
 -- Dumped from database version 17.6
--- Dumped by pg_dump version 18.1
+-- Dumped by pg_dump version 18.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -357,6 +357,13 @@ CREATE POLICY "Public can view questions for active forms" ON public.questions F
 
 
 --
+-- Name: restaurants Public can view restaurants by slug; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Public can view restaurants by slug" ON public.restaurants FOR SELECT USING (true);
+
+
+--
 -- Name: forms Users can delete own forms; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -674,5 +681,5 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON T
 -- PostgreSQL database dump complete
 --
 
-\unrestrict kCEk3wUZLpPDRPjlxjVifHr5ieuAdlwzr59NaHeiX1DX2yhXbuSfAEw0hXNjSSn
+\unrestrict 4ILHXAlOnVKep8W65GGeGbil4s4NUpQ1AF7yaWlIa9W3zXoOdkJNamb13eE9Hqo
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Question } from '@/types/database.types'
 import {
   DndContext,
@@ -59,14 +60,25 @@ export function QuestionList({
 
   if (questions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Inbox className="h-12 w-12 text-muted-foreground mb-4" />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className="flex flex-col items-center justify-center py-12 text-center"
+      >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.15, type: 'spring', stiffness: 200, damping: 15 }}
+        >
+          <Inbox className="h-12 w-12 text-muted-foreground mb-4" />
+        </motion.div>
         <h3 className="text-lg font-semibold mb-2">Nessuna domanda</h3>
         <p className="text-muted-foreground max-w-md">
           Aggiungi domande al tuo modulo usando il pulsante qui sopra,
           oppure scegli un template predefinito.
         </p>
-      </div>
+      </motion.div>
     )
   }
 
@@ -81,15 +93,25 @@ export function QuestionList({
         strategy={verticalListSortingStrategy}
       >
         <div className="space-y-2">
-          {questions.map((question) => (
-            <QuestionItem
-              key={question.id}
-              question={question}
-              onEdit={() => onEdit(question)}
-              onDelete={() => onDelete(question.id)}
-              disabled={disabled}
-            />
-          ))}
+          <AnimatePresence initial={true}>
+            {questions.map((question, i) => (
+              <motion.div
+                key={question.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -20, transition: { duration: 0.2 } }}
+                transition={{ duration: 0.25, delay: i * 0.05, ease: 'easeOut' }}
+                layout
+              >
+                <QuestionItem
+                  question={question}
+                  onEdit={() => onEdit(question)}
+                  onDelete={() => onDelete(question.id)}
+                  disabled={disabled}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       </SortableContext>
     </DndContext>

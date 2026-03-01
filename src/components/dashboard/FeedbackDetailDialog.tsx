@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import {
   Dialog,
   DialogContent,
@@ -167,16 +168,27 @@ export function FeedbackDetailDialog({
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="text-sm text-muted-foreground">
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-sm text-muted-foreground"
+            >
               {submission && formatDate(submission.created_at)}
               {submission?.table_identifier && (
                 <span> • Tavolo {submission.table_identifier}</span>
               )}
-            </div>
+            </motion.div>
 
             <div className="space-y-4">
-              {answersWithQuestions.map(({ question, answer }) => (
-                <div key={question.id} className="space-y-1">
+              {answersWithQuestions.map(({ question, answer }, i) => (
+                <motion.div
+                  key={question.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, delay: i * 0.06, ease: 'easeOut' }}
+                  className="space-y-1"
+                >
                   <p className="font-medium text-sm">{question.label}</p>
                   {answer ? (
                     <AnswerDisplay answer={answer} question={question} />
@@ -185,7 +197,7 @@ export function FeedbackDetailDialog({
                       Nessuna risposta
                     </span>
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

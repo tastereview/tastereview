@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Loader2, Gift } from 'lucide-react'
+import { Loader2, Gift, Check } from 'lucide-react'
 
 interface RewardTextEditorProps {
   rewardText: string
@@ -20,6 +21,7 @@ export function RewardTextEditor({
   const [text, setText] = useState(rewardText)
   const [isSaving, setIsSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     setText(rewardText)
@@ -34,6 +36,8 @@ export function RewardTextEditor({
     await onSave(text)
     setIsSaving(false)
     setHasChanges(false)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
   }
 
   return (
@@ -59,7 +63,7 @@ export function RewardTextEditor({
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Es. Mostra questo schermo al cameriere per un caffè gratis!"
-            className="w-full min-h-[100px] p-3 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full min-h-[100px] p-3 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
             disabled={disabled || isSaving}
           />
           <p className="text-xs text-muted-foreground">
@@ -68,17 +72,34 @@ export function RewardTextEditor({
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {hasChanges && 'Modifiche non salvate'}
-          </div>
+          <AnimatePresence mode="wait">
+            {hasChanges && (
+              <motion.div
+                key="unsaved"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.2 }}
+                className="text-sm text-amber-600"
+              >
+                Modifiche non salvate
+              </motion.div>
+            )}
+          </AnimatePresence>
           <Button
             onClick={handleSave}
             disabled={disabled || isSaving || !hasChanges}
+            className="ml-auto"
           >
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Salvataggio...
+              </>
+            ) : saved ? (
+              <>
+                <Check className="mr-2 h-4 w-4" />
+                Salvato
               </>
             ) : (
               'Salva'

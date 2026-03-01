@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Submission, Sentiment } from '@/types/database.types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -166,18 +167,30 @@ export function FeedbackList({ submissions, formId }: FeedbackListProps) {
 
   if (submissions.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-          <Inbox className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">
-            Nessun feedback ancora
-          </h3>
-          <p className="text-muted-foreground max-w-md">
-            Quando i tuoi clienti inizieranno a lasciare feedback tramite il QR
-            code, li vedrai apparire qui.
-          </p>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+      >
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 15 }}
+            >
+              <Inbox className="h-12 w-12 text-muted-foreground mb-4" />
+            </motion.div>
+            <h3 className="text-lg font-semibold mb-2">
+              Nessun feedback ancora
+            </h3>
+            <p className="text-muted-foreground max-w-md">
+              Quando i tuoi clienti inizieranno a lasciare feedback tramite il QR
+              code, li vedrai apparire qui.
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
     )
   }
 
@@ -231,19 +244,28 @@ export function FeedbackList({ submissions, formId }: FeedbackListProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setPeriod('all')
-              setSentiment('all')
-            }}
-          >
-            <X className="h-4 w-4 mr-1" />
-            Rimuovi filtri
-          </Button>
-        )}
+        <AnimatePresence>
+          {hasActiveFilters && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.15 }}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setPeriod('all')
+                  setSentiment('all')
+                }}
+              >
+                <X className="h-4 w-4 mr-1" />
+                Rimuovi filtri
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <span className="text-sm text-muted-foreground ml-auto">
           {filtered.length} feedback
@@ -251,58 +273,82 @@ export function FeedbackList({ submissions, formId }: FeedbackListProps) {
       </div>
 
       {/* Grouped list */}
-      {filtered.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-muted-foreground">
-              Nessun feedback trovato con i filtri selezionati.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-6">
-          {grouped.map((group) => (
-            <div key={group.key}>
-              <h3 className="text-sm font-medium text-muted-foreground mb-2 capitalize">
-                {group.label}
-              </h3>
-              <Card>
-                <CardContent className="p-0">
-                  <div className="divide-y">
-                    {group.items.map((submission) => (
-                      <button
-                        key={submission.id}
-                        onClick={() => setSelectedSubmission(submission)}
-                        className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors text-left"
-                      >
-                        <div className="flex-shrink-0">
-                          <SentimentIcon
-                            sentiment={submission.overall_sentiment}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium">
-                            {sentimentLabel(submission.overall_sentiment)}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatTime(submission.created_at)}
-                          </p>
-                        </div>
-                        {submission.table_identifier && (
-                          <span className="text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground">
-                            {submission.table_identifier}
-                          </span>
-                        )}
-                        <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                      </button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          ))}
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {filtered.length === 0 ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                <p className="text-muted-foreground">
+                  Nessun feedback trovato con i filtri selezionati.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ) : (
+          <motion.div
+            key={`${period}-${sentiment}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-6"
+          >
+            {grouped.map((group, groupIdx) => (
+              <div key={group.key}>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2 capitalize">
+                  {group.label}
+                </h3>
+                <Card>
+                  <CardContent className="p-0">
+                    <div className="divide-y">
+                      {group.items.map((submission, i) => (
+                        <motion.button
+                          key={submission.id}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            duration: 0.25,
+                            delay: (groupIdx * group.items.length + i) * 0.03,
+                            ease: 'easeOut',
+                          }}
+                          onClick={() => setSelectedSubmission(submission)}
+                          className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors text-left"
+                        >
+                          <div className="flex-shrink-0">
+                            <SentimentIcon
+                              sentiment={submission.overall_sentiment}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium">
+                              {sentimentLabel(submission.overall_sentiment)}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {formatTime(submission.created_at)}
+                            </p>
+                          </div>
+                          {submission.table_identifier && (
+                            <span className="text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground">
+                              {submission.table_identifier}
+                            </span>
+                          )}
+                          <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
+                        </motion.button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <FeedbackDetailDialog
         submission={selectedSubmission}

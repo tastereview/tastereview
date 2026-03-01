@@ -126,6 +126,16 @@ export default function SignupPage() {
                 'Registrati'
               )}
             </Button>
+            <p className="text-xs text-muted-foreground text-center">
+              Registrandoti accetti i{' '}
+              <Link href="/terms" className="text-primary hover:underline">
+                Termini di Servizio
+              </Link>{' '}
+              e la{' '}
+              <Link href="/privacy" className="text-primary hover:underline">
+                Privacy Policy
+              </Link>
+            </p>
             <p className="text-sm text-muted-foreground text-center">
               Hai già un account?{' '}
               <Link href="/login" className="text-primary hover:underline">

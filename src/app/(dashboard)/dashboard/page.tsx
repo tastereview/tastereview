@@ -4,7 +4,7 @@ import type { Restaurant, Submission } from '@/types/database.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FeedbackList } from '@/components/dashboard/FeedbackList'
 import { ScoreRing } from '@/components/dashboard/ScoreRing'
-import { Frown, Meh, Smile, MessageSquare, TrendingUp, Clock } from 'lucide-react'
+import { Frown, Meh, Smile } from 'lucide-react'
 
 function SentimentBar({ great, ok, bad, total }: { great: number; ok: number; bad: number; total: number }) {
   if (total === 0) return null
@@ -143,7 +143,7 @@ export default async function DashboardPage() {
       {/* Stats */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         {/* Overall Score */}
-        <Card>
+        <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Soddisfazione complessiva
@@ -168,58 +168,39 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Total + extra info */}
-        <Card>
+        {/* Stats summary */}
+        <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Riepilogo
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-5 pt-2 pb-6">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                <MessageSquare className="h-6 w-6 text-primary" />
+          <CardContent className="pt-2 pb-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-lg bg-muted/50 p-3.5">
+                <p className="text-xs text-muted-foreground mb-1">Totali</p>
+                <span className="text-2xl font-bold">{stats.total}</span>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Feedback totali</p>
-                <span className="text-3xl font-bold">{stats.total}</span>
+              <div className="rounded-lg bg-muted/50 p-3.5">
+                <p className="text-xs text-muted-foreground mb-1">Oggi</p>
+                <span className="text-2xl font-bold">{todayCount}</span>
               </div>
-            </div>
-            <div className="border-t" />
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
-                <TrendingUp className="h-5 w-5 text-muted-foreground" />
+              <div className="rounded-lg bg-muted/50 p-3.5">
+                <p className="text-xs text-muted-foreground mb-1">Ultimi 7 giorni</p>
+                <span className="text-2xl font-bold">{weekCount}</span>
               </div>
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground">Oggi</p>
-                <span className="text-lg font-semibold">{todayCount}</span>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">Ultimi 7 giorni</p>
-                <span className="text-lg font-semibold">{weekCount}</span>
+              <div className="rounded-lg bg-muted/50 p-3.5">
+                <p className="text-xs text-muted-foreground mb-1">Ultimo</p>
+                <span className="text-lg font-semibold">
+                  {lastFeedback ? formatRelativeDate(lastFeedback) : '—'}
+                </span>
               </div>
             </div>
-            {lastFeedback && (
-              <>
-                <div className="border-t" />
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
-                    <Clock className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Ultimo feedback</p>
-                    <span className="text-sm font-medium">
-                      {formatRelativeDate(lastFeedback)}
-                    </span>
-                  </div>
-                </div>
-              </>
-            )}
           </CardContent>
         </Card>
 
         {/* Sentiment breakdown */}
-        <Card>
+        <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Sentiment

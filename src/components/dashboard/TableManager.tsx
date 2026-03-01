@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Table } from '@/types/database.types'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -131,34 +132,47 @@ export function TableManager({
         {/* Table list */}
         {tables.length > 0 ? (
           <div className="space-y-2">
-            {tables.map((table) => (
-              <div
-                key={table.id}
-                className="flex items-center justify-between p-3 bg-muted/50 rounded-md"
-              >
-                <div>
-                  <p className="font-medium text-sm">{table.name}</p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground hover:text-destructive"
-                  onClick={() => handleDelete(table.id)}
-                  disabled={deletingId === table.id}
+            <AnimatePresence initial={false}>
+              {tables.map((table) => (
+                <motion.div
+                  key={table.id}
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="overflow-hidden"
                 >
-                  {deletingId === table.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            ))}
+                  <div className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
+                    <div>
+                      <p className="font-medium text-sm">{table.name}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-destructive transition-colors"
+                      onClick={() => handleDelete(table.id)}
+                      disabled={deletingId === table.id}
+                    >
+                      {deletingId === table.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground text-center py-4">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="text-sm text-muted-foreground text-center py-4"
+          >
             Nessun tavolo creato. Aggiungi un tavolo per generare QR code dedicati.
-          </p>
+          </motion.p>
         )}
       </CardContent>
     </Card>

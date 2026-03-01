@@ -78,8 +78,9 @@ export function QuestionItem({
         ref={setNodeRef}
         style={style}
         className={cn(
-          'flex items-center gap-3 p-3 border rounded-lg bg-background',
-          isDragging && 'opacity-50 shadow-lg',
+          'flex items-center gap-3 p-3 border rounded-lg bg-background transition-shadow duration-200',
+          isDragging && 'opacity-75 shadow-xl scale-[1.02] ring-2 ring-primary/20 z-50',
+          !isDragging && 'hover:shadow-sm',
           disabled && 'opacity-50'
         )}
       >

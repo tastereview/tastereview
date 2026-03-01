@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Restaurant } from '@/types/database.types'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { Loader2, Store, Share2, Plus, X } from 'lucide-react'
+import { Loader2, Store, Share2, Plus, X, Check } from 'lucide-react'
 import {
   PLATFORMS,
   DEFAULT_PLATFORM_KEYS,
@@ -26,11 +27,13 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
   // Restaurant info state
   const [name, setName] = useState(restaurant.name)
   const [isSavingInfo, setIsSavingInfo] = useState(false)
+  const [savedInfo, setSavedInfo] = useState(false)
 
   // Social links state — initialize from social_links JSONB
   const existingLinks = (restaurant.social_links || {}) as Record<string, string>
   const [socialLinks, setSocialLinks] = useState<Record<string, string>>(existingLinks)
   const [isSavingSocial, setIsSavingSocial] = useState(false)
+  const [savedSocial, setSavedSocial] = useState(false)
 
   // Track which platforms are visible (defaults + any that have values + any user added)
   const initialVisible = new Set([
@@ -55,6 +58,8 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
 
       if (error) throw error
       toast.success('Informazioni salvate')
+      setSavedInfo(true)
+      setTimeout(() => setSavedInfo(false), 2000)
     } catch (error) {
       console.error('Failed to save info:', error)
       toast.error('Errore nel salvare le informazioni')
@@ -83,6 +88,8 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
 
       if (error) throw error
       toast.success('Link social salvati')
+      setSavedSocial(true)
+      setTimeout(() => setSavedSocial(false), 2000)
     } catch (error) {
       console.error('Failed to save social links:', error)
       toast.error('Errore nel salvare i link')
@@ -124,7 +131,7 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
     (k) => PLATFORMS[k]?.category === 'social'
   )
 
-  const renderPlatformInput = (key: string) => {
+  const renderPlatformInput = (key: string, index: number) => {
     const platform = PLATFORMS[key]
     if (!platform) return null
 
@@ -132,7 +139,13 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
     const Icon = platform.icon
 
     return (
-      <div key={key} className="space-y-2">
+      <motion.div
+        key={key}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, delay: index * 0.04, ease: 'easeOut' }}
+        className="space-y-2"
+      >
         <div className="flex items-center justify-between">
           <Label htmlFor={`social-${key}`} className="flex items-center gap-2">
             <Icon className="h-4 w-4" />
@@ -179,7 +192,7 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
             disabled={isSavingSocial}
           />
         )}
-      </div>
+      </motion.div>
     )
   }
 
@@ -232,6 +245,11 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Salvataggio...
                 </>
+              ) : savedInfo ? (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Salvato
+                </>
               ) : (
                 'Salva'
               )}
@@ -262,7 +280,7 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 Piattaforme di Recensioni
               </h3>
-              {reviewPlatforms.map(renderPlatformInput)}
+              {reviewPlatforms.map((key, i) => renderPlatformInput(key, i))}
             </div>
           )}
 
@@ -272,7 +290,7 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 Social
               </h3>
-              {socialPlatforms.map(renderPlatformInput)}
+              {socialPlatforms.map((key, i) => renderPlatformInput(key, i))}
             </div>
           )}
 
@@ -308,6 +326,11 @@ export function SettingsClient({ restaurant }: SettingsClientProps) {
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Salvataggio...
+                </>
+              ) : savedSocial ? (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Salvato
                 </>
               ) : (
                 'Salva link'

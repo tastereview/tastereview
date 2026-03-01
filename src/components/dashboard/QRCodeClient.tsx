@@ -50,7 +50,7 @@ function QRCodeCard({
   }
 
   return (
-    <Card>
+    <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
       <CardContent className="flex flex-col items-center py-6">
         <p className="font-medium text-sm mb-1">{label}</p>
         {sublabel && (

@@ -182,17 +182,17 @@
 ## Phase 10: Polish & Launch Prep
 
 ### 10.1 Error Handling
-- [ ] Global error boundary (`error.tsx`)
-- [ ] 404 page (`not-found.tsx`)
-- [ ] User-friendly error messages in Italian
-- [ ] Loading skeletons for all async content
+- [x] Global error boundary (`error.tsx`)
+- [x] 404 page (`not-found.tsx`)
+- [x] User-friendly error messages in Italian
+- [x] Loading skeletons for all async content
 
 ### 10.2 Landing Page
-- [ ] Hero section with value proposition
-- [ ] How it works (3 steps)
-- [ ] Pricing section (single plan)
-- [ ] CTA to signup
-- [ ] Footer with legal links
+- [x] Hero section with value proposition
+- [x] How it works (3 steps)
+- [x] Pricing section (single plan)
+- [x] CTA to signup
+- [x] Footer with legal links
 
 ### 10.3 SEO & Meta
 - [ ] Per-page meta tags (root layout has basic metadata already)
@@ -202,10 +202,10 @@
 - [ ] sitemap.xml
 
 ### 10.4 Legal Pages
-- [ ] Privacy Policy page (`/privacy`)
-- [ ] Terms of Service page (`/terms`)
-- [ ] Cookie banner (if needed)
-- [ ] Links in footer and signup flow
+- [x] Privacy Policy page (`/privacy`)
+- [x] Terms of Service page (`/terms`)
+- [x] Cookie banner (react-cookie-consent)
+- [x] Links in footer and signup flow
 
 ### 10.5 Final Testing
 - [ ] Test complete signup flow
