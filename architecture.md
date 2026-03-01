@@ -1,4 +1,4 @@
-# BiteReview - Architecture Reference
+# TasteReview - Architecture Reference
 
 Reference material for detailed implementation work. Don't read top-to-bottom — search for the section you need.
 

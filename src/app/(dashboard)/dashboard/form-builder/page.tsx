@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import type { Restaurant, Form, Question } from '@/types/database.types'
 import { FormBuilderClient } from '@/components/form-builder/FormBuilderClient'
+import { Button } from '@/components/ui/button'
+import { ExternalLink } from 'lucide-react'
+import { generatePreviewToken } from '@/lib/preview-token'
 
 export default async function FormBuilderPage() {
   const supabase = await createClient()
@@ -45,13 +48,28 @@ export default async function FormBuilderPage() {
     questions = (questionsData || []) as Question[]
   }
 
+  const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const previewUrl = form
+    ? `${appBaseUrl}/r/${restaurant.slug}/${form.id}?preview=${generatePreviewToken(form.id)}`
+    : null
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Modulo Feedback</h1>
-        <p className="text-muted-foreground mt-1">
-          Personalizza le domande del tuo modulo
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Modulo Feedback</h1>
+          <p className="text-muted-foreground mt-1">
+            Personalizza le domande del tuo modulo
+          </p>
+        </div>
+        {previewUrl && (
+          <Button variant="outline" size="sm" asChild>
+            <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Anteprima
+            </a>
+          </Button>
+        )}
       </div>
 
       <FormBuilderClient

@@ -20,6 +20,8 @@ interface QuestionPageClientProps {
   restaurantSlug: string
   tableIdentifier: string | null
   tableParam: string | null
+  isPreview?: boolean
+  previewToken?: string | null
 }
 
 const SUBMISSION_KEY = 'feedback_submission'
@@ -36,6 +38,8 @@ export function QuestionPageClient({
   restaurantSlug,
   tableIdentifier,
   tableParam,
+  isPreview = false,
+  previewToken = null,
 }: QuestionPageClientProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -45,9 +49,10 @@ export function QuestionPageClient({
   const [error, setError] = useState<string | null>(null)
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward')
 
-  const tableQuery = tableParam
-    ? `?t=${encodeURIComponent(tableParam)}`
-    : ''
+  const queryParts: string[] = []
+  if (tableParam) queryParts.push(`t=${encodeURIComponent(tableParam)}`)
+  if (isPreview && previewToken) queryParts.push(`preview=${encodeURIComponent(previewToken)}`)
+  const navQuery = queryParts.length > 0 ? `?${queryParts.join('&')}` : ''
 
   // Load saved answer from sessionStorage
   useEffect(() => {
@@ -65,6 +70,17 @@ export function QuestionPageClient({
   }, [question.id])
 
   const saveAnswer = async () => {
+    if (isPreview) {
+      // Preview mode: only save to sessionStorage, skip all DB writes
+      if (question.type === 'sentiment' && answer !== undefined) {
+        sessionStorage.setItem(SENTIMENT_KEY, answer as string)
+      }
+      const savedAnswers = JSON.parse(sessionStorage.getItem(ANSWERS_KEY) || '{}')
+      savedAnswers[question.id] = answer
+      sessionStorage.setItem(ANSWERS_KEY, JSON.stringify(savedAnswers))
+      return 'preview'
+    }
+
     // Get or create submission
     let submissionId: string | null = sessionStorage.getItem(SUBMISSION_KEY)
 
@@ -94,27 +110,30 @@ export function QuestionPageClient({
         .single()
 
       if (existingAnswer) {
-        await supabase
+        const { error } = await supabase
           .from('answers')
           .update({ value: answer })
           .eq('id', existingAnswer.id)
+        if (error) throw error
       } else {
-        await supabase
+        const { error } = await supabase
           .from('answers')
           .insert({
             submission_id: submissionId,
             question_id: question.id,
             value: answer,
           })
+        if (error) throw error
       }
 
       // Track sentiment if this is a sentiment question
       if (question.type === 'sentiment') {
         sessionStorage.setItem(SENTIMENT_KEY, answer as string)
-        await supabase
+        const { error } = await supabase
           .from('submissions')
           .update({ overall_sentiment: answer as Sentiment })
           .eq('id', submissionId)
+        if (error) throw error
       }
     }
 
@@ -142,15 +161,18 @@ export function QuestionPageClient({
       const submissionId = await saveAnswer()
 
       if (isLast) {
-        // Mark submission as complete
-        await supabase
-          .from('submissions')
-          .update({ completed_at: new Date().toISOString() })
-          .eq('id', submissionId)
+        if (!isPreview) {
+          // Mark submission as complete
+          const { error: completeError } = await supabase
+            .from('submissions')
+            .update({ completed_at: new Date().toISOString() })
+            .eq('id', submissionId)
+          if (completeError) throw completeError
+        }
 
-        router.push(`/r/${restaurantSlug}/${formId}/reward`)
+        router.push(`/r/${restaurantSlug}/${formId}/reward${isPreview && previewToken ? `?preview=${encodeURIComponent(previewToken)}` : ''}`)
       } else {
-        router.push(`/r/${restaurantSlug}/${formId}/${questionIndex + 1}${tableQuery}`)
+        router.push(`/r/${restaurantSlug}/${formId}/${questionIndex + 1}${navQuery}`)
       }
     } catch (err) {
       console.error('Failed to save answer:', err)
@@ -163,7 +185,7 @@ export function QuestionPageClient({
   const handleBack = () => {
     if (isFirst) return
     setDirection('backward')
-    router.push(`/r/${restaurantSlug}/${formId}/${questionIndex - 1}${tableQuery}`)
+    router.push(`/r/${restaurantSlug}/${formId}/${questionIndex - 1}${navQuery}`)
   }
 
   const variants = {

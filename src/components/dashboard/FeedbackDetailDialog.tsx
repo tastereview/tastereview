@@ -141,6 +141,12 @@ export function FeedbackDetailDialog({
           .order('order_index', { ascending: true }),
       ])
 
+      if (answersResult.error || questionsResult.error) {
+        console.error('Failed to load feedback details:', answersResult.error || questionsResult.error)
+        setIsLoading(false)
+        return
+      }
+
       setAnswers((answersResult.data || []) as Answer[])
       setQuestions((questionsResult.data || []) as Question[])
       setIsLoading(false)

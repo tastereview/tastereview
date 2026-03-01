@@ -1,130 +1,86 @@
-# Session Handoff
+# Session Handoff — 2026-03-01
 
-## What was done
+## What Was Done
 
-### Phase 10.1 — Error Handling (complete)
-- **Global error boundary** (`src/app/error.tsx`) — client component, "Qualcosa è andato storto" with Riprova + Torna alla home buttons
-- **Dashboard error boundary** (`src/app/(dashboard)/dashboard/error.tsx`) — AlertTriangle icon, fits inside sidebar layout
-- **404 page** (`src/app/not-found.tsx`) — clean centered layout, "Torna alla home" button
-- **Loading skeletons** for all dashboard routes:
-  - `dashboard/loading.tsx` — 3-card stats grid + feedback list skeleton
-  - `dashboard/form-builder/loading.tsx` — question cards + reward section
-  - `dashboard/settings/loading.tsx` — restaurant info + social links cards
-  - `dashboard/qr-codes/loading.tsx` — QR preview + tables list
-- Added `shadcn Skeleton` component (`src/components/ui/skeleton.tsx`)
+### 1. "Anteprima" Preview Button
+**Files:** `src/app/(dashboard)/dashboard/form-builder/page.tsx`, `src/app/(dashboard)/dashboard/qr-codes/page.tsx`
 
-### Phase 10.2 — Landing Page (marked done, was built previous session)
-- All tasks marked `[x]` in TODO.md
+Added an "Anteprima" button (outline, sm, ExternalLink icon) next to the h1 on both form-builder and qr-codes pages. Opens `/r/[slug]/[formId]` in a new tab. Only rendered when a form exists.
 
-### Phase 10.4 — Legal Pages (complete)
-- **Privacy Policy** (`src/app/privacy/page.tsx`) — GDPR-compliant, Italian language
-  - Titolare: Miral Media di Aggio Filippo, P.IVA IT04901620262
-  - Address omitted (referenced to Registro Imprese)
-  - `[EMAIL]` placeholder — needs replacement when domain is purchased
-  - Covers: data collected, purposes, legal bases, third parties (Supabase, Stripe, Vercel), cookies, retention, GDPR rights
-- **Terms of Service** (`src/app/terms/page.tsx`) — subscription terms, liability, Foro di Treviso
-  - `[EMAIL]` placeholder — same, needs replacement
-- **Cookie banner** (`src/components/shared/CookieBanner.tsx`)
-  - Uses `react-cookie-consent` npm package
-  - Informational only (technical cookies, no consent required)
-  - Styled to match app theme, links to /privacy
-  - Added to root layout (`src/app/layout.tsx`)
-- **Signup legal line** — "Registrandoti accetti i Termini di Servizio e la Privacy Policy" added to signup page
-- Footer already had /privacy and /terms links (from landing page session)
+### 2. Signed Preview Mode (No DB Writes)
+**Files:** `src/lib/preview-token.ts` (new), `src/app/r/[restaurantSlug]/[formId]/page.tsx`, `src/app/r/[restaurantSlug]/[formId]/[index]/page.tsx`, `src/components/feedback/QuestionPageClient.tsx`
 
-### Landing Page Fixes
-- **Star animation** (`AnimatedStars` in `src/app/page.tsx`):
-  - Cycle extended from 4s → 5s
-  - `repeatDelay: 0` — no gap between loops
-  - Stars hold visible for 88% of cycle, fade-out is only 0.6s
-  - Shimmer sweep timing adjusted to match
-- **Mobile horizontal scroll** — Added `overflow-x-hidden` to root wrapper div
+Preview URLs include a signed HMAC token (`?preview=<sig>.<timestamp>`) generated server-side using `SUPABASE_SERVICE_ROLE_KEY` as the secret. Tokens expire after 1 hour.
 
-### Dashboard UI Overhaul
-All changes use Framer Motion. No new dependencies added (already in project).
+**Flow:**
+- Dashboard pages call `generatePreviewToken(formId)` to build the URL
+- Entry redirect page (`/r/[slug]/[formId]/page.tsx`) forwards the `preview` param
+- Question page server component (`[index]/page.tsx`) calls `verifyPreviewToken(formId, token)` — only sets `isPreview=true` if signature is valid and not expired
+- `QuestionPageClient` receives `isPreview` + raw `previewToken`:
+  - When `isPreview=true`: `saveAnswer()` only writes to sessionStorage, `handleNext()` skips the `completed_at` update
+  - The token is forwarded through all navigation URLs (next/back/reward)
+- A customer adding `?preview=true` or a random value to the URL gets normal submission mode (token verification fails)
 
-**ScoreRing** (`src/components/dashboard/ScoreRing.tsx`) — full rewrite:
-- Replaced `setInterval` + manual easing with Framer Motion `useSpring` + `useTransform`
-- SVG ring and number counter perfectly synced via motion values
-- Added text label below number: "Eccellente" (≥80), "Buono" (≥60), "Sufficiente" (≥40), "Da migliorare" (<40)
-- Added subtle radial glow behind ring in score's color
-- Default size bumped 130 → 140
+### 3. Trial Expiration Warning Banner
+**Files:** `src/components/dashboard/TrialExpirationBanner.tsx` (new), `src/app/(dashboard)/layout.tsx`
 
-**Dashboard home** (`src/app/(dashboard)/dashboard/page.tsx`):
-- **Riepilogo card redesigned** — removed icon circles, dividers, inconsistent sizing. Now a clean 2×2 grid: Totali | Oggi | Ultimi 7 giorni | Ultimo. Each cell is muted-bg box with label + big number.
-- **Hover lift** on all 3 stat cards (`hover:-translate-y-1 hover:shadow-md`)
-- Removed unused imports (MessageSquare, TrendingUp, Clock)
+- Layout computes `trialDaysRemaining` from `restaurant.subscription_status === 'trialing'` + `restaurant.trial_ends_at`
+- Banner renders above `{children}` (outside padding wrapper, full-width) when ≤3 days remain
+- Amber state (1–3 days): dismissible via X button, local state (resets on navigation — intentional)
+- Red state (≤0 / expired): not dismissible
+- Messages: "scade domani" (1 day), "scade tra X giorni" (2–3), "è scaduta" (expired)
+- "Abbonati ora" link to `/dashboard/billing`
 
-**FeedbackList** (`src/components/dashboard/FeedbackList.tsx`):
-- Staggered entrance: items fade+slide in with 30ms stagger per row
-- `AnimatePresence mode="wait"` crossfades between filter states (keyed by `${period}-${sentiment}`)
-- "Rimuovi filtri" button animates in/out
-- Empty state: card scales in, Inbox icon bounces with spring physics
+### 4. Quick-Start Checklist for Empty Dashboards
+**Files:** `src/components/dashboard/QuickStartChecklist.tsx` (new), `src/app/(dashboard)/dashboard/page.tsx`
 
-**FeedbackDetailDialog** (`src/components/dashboard/FeedbackDetailDialog.tsx`):
-- Answer items stagger in with 60ms delay each after dialog opens
+Shows when `stats.total === 0` (no completed submissions yet). Disappears automatically when first feedback arrives (server-side condition).
 
-**GooglePlaceIdFinder** (`src/components/dashboard/GooglePlaceIdFinder.tsx`):
-- `AnimatePresence` for smooth height animation on expand/collapse
-- Replaced ChevronUp/ChevronDown swap with single ChevronDown that rotates 180°
+**3 items:**
+1. "Personalizza il modulo con le domande che contano" → `/dashboard/form-builder` — ✓ when form exists AND has questions (count query via `select('*', { count: 'exact', head: true })`)
+2. "Configura i link social collegando i tuoi canali" → `/dashboard/settings` — ✓ when `restaurant.social_links` has at least one non-empty value
+3. "Condividi il QR code e ottieni il primo feedback" → `/dashboard/qr-codes` — always unchecked (the checklist disappears before this could be checked)
 
-**QRCodeClient** (`src/components/dashboard/QRCodeClient.tsx`):
-- Hover lift on QR code cards
+**UI:** Card with `border-primary/20 bg-primary/5`, Progress bar at top, staggered Framer Motion entrance (0.12s stagger), spring-animated green check circles. Dismiss X button persists via `localStorage` key `quickstart_dismissed`.
 
-**TableManager** (`src/components/dashboard/TableManager.tsx`):
-- `AnimatePresence` for table add/remove (height + opacity animation)
-- Empty state fades in
+### 5. Brand Rename + Minor Fixes (pre-existing uncommitted changes)
+- `CLAUDE.md`, `TODO.md`, `architecture.md`: BiteReview → TasteReview
+- `BillingClient.tsx`: BiteReview → TasteReview in UI copy
+- `FeedbackDetailDialog.tsx`: Added error handling for answers/questions data loading
 
-**SettingsClient** (`src/components/dashboard/SettingsClient.tsx`):
-- Platform inputs stagger in with 40ms delay (index passed to renderPlatformInput)
-- Both save buttons show checkmark "Salvato" state for 2s after success
-- Added `Check` to lucide imports, `savedInfo`/`savedSocial` state vars
+---
 
-**QuestionItem** (`src/components/form-builder/QuestionItem.tsx`):
-- Enhanced drag state: `shadow-xl scale-[1.02] ring-2 ring-primary/20 z-50` (was just `opacity-50 shadow-lg`)
-- Added `hover:shadow-sm` when not dragging
+## Architecture Decisions
 
-**QuestionList** (`src/components/form-builder/QuestionList.tsx`):
-- Wrapped items in `motion.div` with staggered entrance (50ms delay per item)
-- `AnimatePresence` for smooth delete animation (slide left + fade)
-- `layout` prop for smooth reorder animations
-- Empty state: icon bounces in with spring physics
+- **Preview token uses `SUPABASE_SERVICE_ROLE_KEY`** as HMAC secret — no new env var needed. This key is only available server-side (never exposed to client).
+- **Preview verification happens server-side** in the question page RSC. The client only receives a boolean `isPreview` and the raw token string (for forwarding in URLs).
+- **Quick-start checklist uses localStorage** for dismiss (not DB) — it's a low-stakes UI preference, not worth a schema change.
+- **Trial banner uses component state** for dismiss — intentionally resets on navigation so the warning stays visible.
 
-**RewardTextEditor** (`src/components/form-builder/RewardTextEditor.tsx`):
-- "Modifiche non salvate" text animated in/out with `AnimatePresence` (slide + fade), colored amber
-- Save button shows checkmark "Salvato" for 2s after success
-- Textarea has `transition-shadow` for smooth focus effect
+---
 
-## Known issues / placeholders
-- `[EMAIL]` in Privacy Policy and Terms of Service — replace with actual email when domain is purchased
-- `database-schema.sql` has a minor diff (schema dump version bump + public restaurant RLS policy)
+## Known Limitations / Future Considerations
 
-## Proposed improvements (discussed, not yet implemented)
+- **Preview token TTL is 1 hour** — if a restaurant owner leaves the preview tab open longer, subsequent page navigations will fall back to normal submission mode. The TTL is in `src/lib/preview-token.ts` (`TOKEN_TTL_MS`).
+- **"Scarica il QR code" checklist item** is never marked done — we intentionally left it as a CTA since the checklist disappears once first feedback arrives anyway. If we wanted to track it, we'd need a DB column or localStorage flag.
+- **Trial banner only shows for `trialing` status** — if `subscription_status` is something else (e.g. `past_due`), no banner shows. This could be extended later.
 
-### Bugs / Must-fix
-1. **"BiteReview" in BillingClient.tsx** — lines 101, 138 still say "BiteReview" instead of "TasteReview"
-2. **200-submission cap corrupts stats** — Dashboard query `.limit(200)` means stats are wrong for restaurants with >200 submissions. Counts should use DB aggregation.
+---
 
-### High-impact UX
-3. **Empty dashboard quick-start checklist** — New users see empty cards with no guidance. Add a checklist: "Personalizza il modulo" → "Scarica il QR code" → "Condividi col tuo primo cliente". Disappears after first feedback.
-4. **Trial warning outside billing** — Show trial expiration banner in sidebar or dashboard top when days remaining ≤ 3.
-5. **"Preview form" button** — On QR codes page or form builder, add link to open `/r/[slug]/[formId]` in new tab.
+## Files Changed (Summary)
 
-### Nice to have
-6. **Pagination / infinite scroll** on feedback list (currently loads all at once)
-7. **CSV/Excel export** of feedback data
-8. **Real-time updates** via Supabase subscriptions (push new submissions without refresh)
-9. **Sidebar mobile animation** with Framer Motion
-
-## Important files to read
-- `CLAUDE.md` — Development rules, project structure, conventions
-- `TODO.md` — Task tracking (Phases 10.1, 10.2, 10.4 are now done)
-- `ARCHITECTURE.md` — Route map, DB schema, integration details
-
-## What to work on next?
-Check the proposed improvements above (items 1–5 are highest priority), then continue with:
-- `TODO.md` Phase 10.3 — SEO & Meta (OpenGraph, favicon, robots.txt, sitemap)
-- `TODO.md` Phase 10.5 — Final Testing
-- `TODO.md` Phase 10.6 — Launch
-
-Ask the user what they'd like to tackle next.
+| File | Change |
+|------|--------|
+| `src/lib/preview-token.ts` | **NEW** — HMAC token generate/verify |
+| `src/components/dashboard/TrialExpirationBanner.tsx` | **NEW** — Trial warning banner |
+| `src/components/dashboard/QuickStartChecklist.tsx` | **NEW** — Empty dashboard checklist |
+| `src/app/(dashboard)/dashboard/form-builder/page.tsx` | Added preview button + token |
+| `src/app/(dashboard)/dashboard/qr-codes/page.tsx` | Added preview button + token |
+| `src/app/(dashboard)/layout.tsx` | Added trial banner rendering |
+| `src/app/(dashboard)/dashboard/page.tsx` | Added checklist queries + rendering |
+| `src/app/r/[restaurantSlug]/[formId]/page.tsx` | Forward preview param |
+| `src/app/r/[restaurantSlug]/[formId]/[index]/page.tsx` | Verify preview token |
+| `src/components/feedback/QuestionPageClient.tsx` | Preview mode: skip DB writes |
+| `CLAUDE.md`, `TODO.md`, `architecture.md` | BiteReview → TasteReview |
+| `src/components/dashboard/BillingClient.tsx` | BiteReview → TasteReview |
+| `src/components/dashboard/FeedbackDetailDialog.tsx` | Error handling fix |

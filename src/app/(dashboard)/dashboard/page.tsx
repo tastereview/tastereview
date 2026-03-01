@@ -4,6 +4,7 @@ import type { Restaurant, Submission } from '@/types/database.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FeedbackList } from '@/components/dashboard/FeedbackList'
 import { ScoreRing } from '@/components/dashboard/ScoreRing'
+import { QuickStartChecklist } from '@/components/dashboard/QuickStartChecklist'
 import { Frown, Meh, Smile } from 'lucide-react'
 
 function SentimentBar({ great, ok, bad, total }: { great: number; ok: number; bad: number; total: number }) {
@@ -91,45 +92,70 @@ export default async function DashboardPage() {
     .eq('restaurant_id', restaurant.id)
     .single()
 
+  // Quick-start checklist data
+  let questionsCount = 0
+  if (formData) {
+    const { count } = await supabase
+      .from('questions')
+      .select('*', { count: 'exact', head: true })
+      .eq('form_id', formData.id)
+    questionsCount = count ?? 0
+  }
+  const hasFormWithQuestions = !!formData && questionsCount > 0
+  const hasSocialLinks = !!(
+    restaurant.social_links &&
+    Object.values(restaurant.social_links).some((v) => v && v.trim() !== '')
+  )
+
   let submissions: Submission[] = []
   let stats = { total: 0, great: 0, ok: 0, bad: 0 }
+  let todayCount = 0
+  let weekCount = 0
+  let lastFeedback: string | null = null
+
+  const now = new Date()
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const weekStart = new Date(todayStart.getTime() - 6 * 24 * 60 * 60 * 1000)
 
   if (formData) {
-    const { data: submissionsData } = await supabase
-      .from('submissions')
-      .select('*')
-      .eq('form_id', formData.id)
-      .not('completed_at', 'is', null)
-      .order('created_at', { ascending: false })
-      .limit(200)
+    // Lightweight stats query: fetch only what's needed to compute counts (no limit)
+    const [{ data: statsData }, { data: submissionsData }] = await Promise.all([
+      supabase
+        .from('submissions')
+        .select('overall_sentiment, created_at')
+        .eq('form_id', formData.id)
+        .not('completed_at', 'is', null),
+      supabase
+        .from('submissions')
+        .select('*')
+        .eq('form_id', formData.id)
+        .not('completed_at', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(200),
+    ])
 
     submissions = (submissionsData || []) as Submission[]
 
-    stats.total = submissions.length
-    submissions.forEach((s) => {
+    // Compute stats from the full (unlimited) dataset
+    const allSubmissions = statsData || []
+    stats.total = allSubmissions.length
+    allSubmissions.forEach((s) => {
       if (s.overall_sentiment === 'great') stats.great++
       else if (s.overall_sentiment === 'ok') stats.ok++
       else if (s.overall_sentiment === 'bad') stats.bad++
+
+      const createdAt = new Date(s.created_at)
+      if (createdAt >= todayStart) todayCount++
+      if (createdAt >= weekStart) weekCount++
     })
+
+    lastFeedback = submissions.length > 0 ? submissions[0].created_at : null
   }
 
   const score =
     stats.total > 0
       ? Math.round((stats.great * 100 + stats.ok * 50) / stats.total)
       : 0
-
-  // Stats for the "Totale" card
-  const now = new Date()
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const weekStart = new Date(todayStart.getTime() - 6 * 24 * 60 * 60 * 1000)
-
-  const todayCount = submissions.filter(
-    (s) => new Date(s.created_at) >= todayStart
-  ).length
-  const weekCount = submissions.filter(
-    (s) => new Date(s.created_at) >= weekStart
-  ).length
-  const lastFeedback = submissions.length > 0 ? submissions[0].created_at : null
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -139,6 +165,14 @@ export default async function DashboardPage() {
           Visualizza e gestisci i feedback dei tuoi clienti
         </p>
       </div>
+
+      {/* Quick-start checklist for new users */}
+      {stats.total === 0 && (
+        <QuickStartChecklist
+          hasFormWithQuestions={hasFormWithQuestions}
+          hasSocialLinks={hasSocialLinks}
+        />
+      )}
 
       {/* Stats */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">

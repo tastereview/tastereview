@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import type { Restaurant, Form, Question } from '@/types/database.types'
 import { QuestionPageClient } from '@/components/feedback/QuestionPageClient'
 import { decodeTableId } from '@/lib/utils'
+import { verifyPreviewToken } from '@/lib/preview-token'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,12 +13,13 @@ interface Props {
     formId: string
     index: string
   }>
-  searchParams: Promise<{ t?: string }>
+  searchParams: Promise<{ t?: string; preview?: string }>
 }
 
 export default async function QuestionPage({ params, searchParams }: Props) {
   const { restaurantSlug, formId, index } = await params
-  const { t } = await searchParams
+  const { t, preview } = await searchParams
+  const isPreview = !!preview && verifyPreviewToken(formId, preview)
   const questionIndex = parseInt(index, 10)
   const supabase = await createClient()
 
@@ -99,6 +101,8 @@ export default async function QuestionPage({ params, searchParams }: Props) {
       restaurantSlug={restaurantSlug}
       tableIdentifier={tableIdentifier}
       tableParam={t || null}
+      isPreview={isPreview}
+      previewToken={isPreview ? preview : null}
     />
   )
 }

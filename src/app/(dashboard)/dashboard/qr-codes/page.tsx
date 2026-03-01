@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import type { Restaurant, Form, Table } from '@/types/database.types'
 import { QRCodeClient } from '@/components/dashboard/QRCodeClient'
+import { Button } from '@/components/ui/button'
+import { ExternalLink } from 'lucide-react'
+import { generatePreviewToken } from '@/lib/preview-token'
 
 export default async function QRCodesPage() {
   const supabase = await createClient()
@@ -46,14 +49,27 @@ export default async function QRCodesPage() {
   const feedbackUrl = form
     ? `${appBaseUrl}/r/${restaurant.slug}/${form.id}`
     : null
+  const previewUrl = form
+    ? `${feedbackUrl}?preview=${generatePreviewToken(form.id)}`
+    : null
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">QR Code</h1>
-        <p className="text-muted-foreground mt-1">
-          Genera e scarica i QR code per il tuo ristorante
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">QR Code</h1>
+          <p className="text-muted-foreground mt-1">
+            Genera e scarica i QR code per il tuo ristorante
+          </p>
+        </div>
+        {feedbackUrl && (
+          <Button variant="outline" size="sm" asChild>
+            <a href={previewUrl!} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Anteprima
+            </a>
+          </Button>
+        )}
       </div>
 
       {feedbackUrl ? (

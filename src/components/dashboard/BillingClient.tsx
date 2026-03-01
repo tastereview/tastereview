@@ -98,7 +98,7 @@ export function BillingClient({ restaurant, trialDaysRemaining }: BillingClientP
             <div>
               <CardTitle className="text-lg">Piano Attuale</CardTitle>
               <CardDescription>
-                Il tuo abbonamento BiteReview
+                Il tuo abbonamento TasteReview
               </CardDescription>
             </div>
           </div>
@@ -135,7 +135,7 @@ export function BillingClient({ restaurant, trialDaysRemaining }: BillingClientP
           {!hasActiveSubscription ? (
             <div className="text-center space-y-4">
               <div>
-                <h3 className="font-medium text-lg">Abbonati a BiteReview</h3>
+                <h3 className="font-medium text-lg">Abbonati a TasteReview</h3>
                 <p className="text-muted-foreground text-sm">
                   {isTrialing && trialDaysRemaining > 0
                     ? 'Attiva il tuo abbonamento per continuare dopo la prova'
