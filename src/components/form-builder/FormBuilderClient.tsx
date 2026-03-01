@@ -83,6 +83,13 @@ export function FormBuilderClient({
   }
 
   const handleQuestionDelete = async (questionId: string) => {
+    // Prevent deleting the last sentiment question
+    const target = questions.find((q) => q.id === questionId)
+    if (target?.type === 'sentiment' && questions.filter((q) => q.type === 'sentiment').length <= 1) {
+      toast.error('La domanda di valutazione generale è obbligatoria')
+      return
+    }
+
     setQuestions((prev) => prev.filter((q) => q.id !== questionId))
 
     setIsSaving(true)
@@ -232,6 +239,7 @@ export function FormBuilderClient({
         question={editingQuestion}
         onSave={handleQuestionUpdate}
         onClose={() => setEditingQuestion(null)}
+        locked={editingQuestion?.type === 'sentiment' && questions.filter((q) => q.type === 'sentiment').length <= 1}
       />
     </div>
   )

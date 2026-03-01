@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import {
   GripVertical,
+  Lock,
   Pencil,
   Trash2,
   Smile,
@@ -30,6 +31,7 @@ interface QuestionItemProps {
   onEdit: () => void
   onDelete: () => void
   disabled?: boolean
+  locked?: boolean
 }
 
 const typeIcons: Record<string, typeof Smile> = {
@@ -53,6 +55,7 @@ export function QuestionItem({
   onEdit,
   onDelete,
   disabled,
+  locked,
 }: QuestionItemProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
@@ -113,14 +116,20 @@ export function QuestionItem({
           >
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowDeleteConfirm(true)}
-            disabled={disabled}
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
+          {locked ? (
+            <div className="flex items-center justify-center h-9 w-9">
+              <Lock className="h-3.5 w-3.5 text-muted-foreground/50" />
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={disabled}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          )}
         </div>
       </div>
 

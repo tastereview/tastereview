@@ -26,6 +26,7 @@ import { FeedbackDetailDialog } from './FeedbackDetailDialog'
 interface FeedbackListProps {
   submissions: Submission[]
   formId?: string
+  tableNames?: Record<string, string>
 }
 
 type PeriodFilter = 'all' | 'today' | 'week' | 'month'
@@ -107,7 +108,7 @@ function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
-export function FeedbackList({ submissions, formId }: FeedbackListProps) {
+export function FeedbackList({ submissions, formId, tableNames = {} }: FeedbackListProps) {
   const [selectedSubmission, setSelectedSubmission] =
     useState<Submission | null>(null)
   const [period, setPeriod] = useState<PeriodFilter>('all')
@@ -304,7 +305,7 @@ export function FeedbackList({ submissions, formId }: FeedbackListProps) {
                 <h3 className="text-sm font-medium text-muted-foreground mb-2 capitalize">
                   {group.label}
                 </h3>
-                <Card>
+                <Card className="py-0 overflow-hidden">
                   <CardContent className="p-0">
                     <div className="divide-y">
                       {group.items.map((submission, i) => (
@@ -326,18 +327,20 @@ export function FeedbackList({ submissions, formId }: FeedbackListProps) {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium">
-                              {sentimentLabel(submission.overall_sentiment)}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium">
+                                {sentimentLabel(submission.overall_sentiment)}
+                              </p>
+                              {submission.table_identifier && (
+                                <span className="text-xs font-medium bg-primary/10 text-primary px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                                  {tableNames[submission.table_identifier] || submission.table_identifier}
+                                </span>
+                              )}
+                            </div>
                             <p className="text-sm text-muted-foreground">
                               {formatTime(submission.created_at)}
                             </p>
                           </div>
-                          {submission.table_identifier && (
-                            <span className="text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground">
-                              {submission.table_identifier}
-                            </span>
-                          )}
                           <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
                         </motion.button>
                       ))}
@@ -353,6 +356,7 @@ export function FeedbackList({ submissions, formId }: FeedbackListProps) {
       <FeedbackDetailDialog
         submission={selectedSubmission}
         formId={formId}
+        tableNames={tableNames}
         onClose={() => setSelectedSubmission(null)}
       />
     </>

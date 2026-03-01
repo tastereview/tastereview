@@ -264,6 +264,7 @@ export function QuestionPageClient({
         isLast={isLast}
         isSubmitting={isSubmitting}
         isVerifying={showTurnstile && !turnstileToken}
+        isVerified={showTurnstile && !!turnstileToken}
         onBack={handleBack}
         onNext={handleNext}
       />

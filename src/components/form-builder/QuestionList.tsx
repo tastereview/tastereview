@@ -108,6 +108,7 @@ export function QuestionList({
                   onEdit={() => onEdit(question)}
                   onDelete={() => onDelete(question.id)}
                   disabled={disabled}
+                  locked={question.type === 'sentiment' && questions.filter((q) => q.type === 'sentiment').length === 1}
                 />
               </motion.div>
             ))}

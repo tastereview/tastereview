@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 import { redirect } from 'next/navigation'
-import type { Restaurant, Submission } from '@/types/database.types'
+import type { Restaurant, Submission, Table } from '@/types/database.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FeedbackList } from '@/components/dashboard/FeedbackList'
 import { ScoreRing } from '@/components/dashboard/ScoreRing'
@@ -112,6 +112,18 @@ export default async function DashboardPage() {
     restaurant.social_links &&
     Object.values(restaurant.social_links).some((v) => v && v.trim() !== '')
   )
+
+  // Fetch tables for identifier → name resolution
+  const { data: tablesData } = await supabase
+    .from('tables')
+    .select('*')
+    .eq('restaurant_id', restaurant.id)
+
+  const tables = (tablesData || []) as Table[]
+  const tableNames: Record<string, string> = {}
+  for (const t of tables) {
+    tableNames[t.identifier] = t.name
+  }
 
   let submissions: Submission[] = []
   let stats = { total: 0, great: 0, ok: 0, bad: 0 }
@@ -290,7 +302,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Feedback List */}
-      <FeedbackList submissions={submissions} formId={formData?.id} />
+      <FeedbackList submissions={submissions} formId={formData?.id} tableNames={tableNames} />
     </div>
   )
 }

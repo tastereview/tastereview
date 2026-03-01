@@ -19,6 +19,7 @@ interface QuestionEditorProps {
   question: Question | null
   onSave: (question: Question) => Promise<void>
   onClose: () => void
+  locked?: boolean
 }
 
 interface QuestionOption {
@@ -26,7 +27,7 @@ interface QuestionOption {
   label: string
 }
 
-export function QuestionEditor({ question, onSave, onClose }: QuestionEditorProps) {
+export function QuestionEditor({ question, onSave, onClose, locked }: QuestionEditorProps) {
   const [label, setLabel] = useState('')
   const [description, setDescription] = useState('')
   const [isRequired, setIsRequired] = useState(true)
@@ -136,9 +137,9 @@ export function QuestionEditor({ question, onSave, onClose }: QuestionEditorProp
               </p>
             </div>
             <Switch
-              checked={isRequired}
+              checked={locked || isRequired}
               onCheckedChange={setIsRequired}
-              disabled={isSaving}
+              disabled={isSaving || locked}
             />
           </div>
 

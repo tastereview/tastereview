@@ -15,6 +15,7 @@ import { Loader2, Frown, Meh, Smile, Star } from 'lucide-react'
 interface FeedbackDetailDialogProps {
   submission: Submission | null
   formId?: string
+  tableNames?: Record<string, string>
   onClose: () => void
 }
 
@@ -115,6 +116,7 @@ function AnswerDisplay({ answer, question }: { answer: Answer; question?: Questi
 export function FeedbackDetailDialog({
   submission,
   formId,
+  tableNames = {},
   onClose,
 }: FeedbackDetailDialogProps) {
   const supabase = createClient()
@@ -182,7 +184,9 @@ export function FeedbackDetailDialog({
             >
               {submission && formatDate(submission.created_at)}
               {submission?.table_identifier && (
-                <span> • Tavolo {submission.table_identifier}</span>
+                <span className="ml-2 inline-flex items-center text-xs font-medium bg-primary/10 text-primary px-2.5 py-0.5 rounded-full">
+                  {tableNames[submission.table_identifier] || submission.table_identifier}
+                </span>
               )}
             </motion.div>
 
