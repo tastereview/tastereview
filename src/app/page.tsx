@@ -25,6 +25,12 @@ import {
   Lock,
   ExternalLink,
   Shield,
+  ShieldAlert,
+  TrendingUp,
+  UtensilsCrossed,
+  Pizza,
+  Coffee,
+  Hotel,
 } from "lucide-react";
 
 /* ─── Animation helpers ─── */
@@ -108,31 +114,28 @@ const qrPattern = [
 /* ─── Animated illustrations ─── */
 
 function AnimatedStars() {
-  const cycleDuration = 5;
-  const appearEnd = 0.25; // stars fully visible at 25% (1.25s)
-  const holdEnd = 0.88; // start fading at 88% (4.4s)
-  // Fade-out is only 0.6s (12% of 5s), so stars reappear almost immediately
+  const cycleDuration = 8;
 
   return (
-    <div className="relative mb-8 inline-flex items-center gap-1.5 overflow-hidden py-2 sm:gap-2.5">
+    <div className="relative mb-8 inline-flex items-center gap-1.5 py-4 px-4 sm:gap-2.5">
       {[0, 1, 2, 3, 4].map((i) => (
         <motion.div
           key={i}
           animate={{
             opacity: [0, 1, 1, 0],
-            scale: [0, 1, 1, 0],
+            scale: [0, 1.15, 1, 0],
             rotate: [-180, 0, 0, -180],
           }}
           transition={{
             duration: cycleDuration,
-            times: [0, appearEnd, holdEnd, 1],
-            delay: i * 0.15,
+            times: [0, 0.12, 0.92, 1],
+            delay: i * 0.08,
             repeat: Infinity,
             repeatDelay: 0,
             ease: "easeInOut",
           }}
         >
-          <Star className="size-8 fill-amber-400 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)] sm:size-10" />
+          <Star className="size-8 fill-amber-400 text-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.3)] sm:size-10" />
         </motion.div>
       ))}
       {/* Shimmer sweep — plays each cycle */}
@@ -141,7 +144,7 @@ function AnimatedStars() {
         animate={{ x: ["-100%", "350%"] }}
         transition={{
           duration: 0.7,
-          delay: 1.3,
+          delay: 1.0,
           repeat: Infinity,
           repeatDelay: cycleDuration - 0.7,
           ease: "easeInOut",
@@ -387,6 +390,82 @@ export default function Home() {
         </motion.div>
       </section>
 
+      {/* ── Pain Point → Solution ── */}
+      <section className="border-t py-24">
+        <motion.div
+          className="mx-auto max-w-6xl px-6 text-center"
+          {...fadeIn}
+        >
+          <span className="mb-4 inline-block rounded-full border border-red-200 bg-red-50 px-4 py-1.5 text-sm font-semibold text-red-800">
+            Il problema
+          </span>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+            Recensioni perse ogni giorno
+          </h2>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground leading-relaxed">
+            I clienti soddisfatti se ne vanno in silenzio. Quelli insoddisfatti
+            corrono a scrivere recensioni negative. La tua reputazione online
+            non riflette la qualità reale del tuo locale.
+          </p>
+        </motion.div>
+
+        <motion.div
+          className="mx-auto mt-16 max-w-5xl px-6"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+        >
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                icon: ShieldAlert,
+                title: "Intercetta il negativo",
+                description:
+                  "Le critiche restano private, solo per te. Nessuna recensione negativa pubblica, solo opportunità per migliorare.",
+                color: "text-red-500",
+                bg: "bg-red-500/10",
+                border: "border-red-200",
+              },
+              {
+                icon: Star,
+                title: "Guida il positivo",
+                description:
+                  "Chi è felice viene indirizzato a lasciare una recensione su Google, TripAdvisor e le piattaforme che contano.",
+                color: "text-amber-500",
+                bg: "bg-amber-500/10",
+                border: "border-amber-200",
+              },
+              {
+                icon: TrendingUp,
+                title: "Cresci online",
+                description:
+                  "Più recensioni positive, meno negative pubbliche. Il tuo punteggio online cresce in modo naturale e costante.",
+                color: "text-green-500",
+                bg: "bg-green-500/10",
+                border: "border-green-200",
+              },
+            ].map((item) => (
+              <motion.div key={item.title} variants={fadeUp}>
+                <div
+                  className={`h-full rounded-2xl border ${item.border} ${item.bg} p-8 text-center`}
+                >
+                  <div
+                    className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-background shadow-sm"
+                  >
+                    <item.icon className={`size-7 ${item.color}`} />
+                  </div>
+                  <h3 className="text-lg font-semibold">{item.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
       {/* ── Come funziona ── */}
       <section className="border-t bg-muted/50 py-24">
         <motion.div
@@ -558,8 +637,71 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Reviews section ── */}
+      {/* ── Stats / Impact Numbers ── */}
       <section className="py-24">
+        <motion.div
+          className="mx-auto max-w-6xl px-6 text-center"
+          {...fadeIn}
+        >
+          <span className="mb-4 inline-block rounded-full border bg-background px-4 py-1.5 text-sm font-medium text-muted-foreground">
+            I numeri parlano
+          </span>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            L&apos;impatto sulle recensioni
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+            Ecco perché i ristoratori scelgono 5stelle per proteggere e far
+            crescere la propria reputazione online.
+          </p>
+        </motion.div>
+
+        <motion.div
+          className="mx-auto mt-16 max-w-5xl px-6"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+        >
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                value: "70%",
+                accent: "text-primary",
+                description:
+                  "dei clienti soddisfatti non lascia mai una recensione — a meno che non glielo chiedi al momento giusto.",
+              },
+              {
+                value: "1 su 3",
+                accent: "text-red-500",
+                description:
+                  "clienti insoddisfatti scrive una recensione negativa. Senza un filtro, queste finiscono online.",
+              },
+              {
+                value: "+40%",
+                accent: "text-green-500",
+                description:
+                  "di recensioni positive in più nei primi 30 giorni grazie al routing intelligente di 5stelle.",
+              },
+            ].map((stat) => (
+              <motion.div
+                key={stat.value}
+                variants={fadeUp}
+                className="rounded-2xl border bg-muted/50 p-8 text-center"
+              >
+                <div className={`text-4xl font-bold tracking-tight sm:text-5xl ${stat.accent}`}>
+                  {stat.value}
+                </div>
+                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                  {stat.description}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ── Reviews section ── */}
+      <section className="border-t bg-muted/50 py-24">
         <motion.div
           className="mx-auto max-w-6xl px-6 text-center"
           {...fadeIn}
@@ -730,7 +872,7 @@ export default function Home() {
       </section>
 
       {/* ── Features ── */}
-      <motion.section className="border-t bg-muted/50 py-24" {...fadeIn}>
+      <motion.section className="border-t py-24" {...fadeIn}>
         <div className="mx-auto max-w-6xl px-6">
           <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
             Tutto quello che ti serve
@@ -766,11 +908,72 @@ export default function Home() {
         </div>
       </motion.section>
 
+      {/* ── Perfetto per te ── */}
+      <motion.section className="border-t bg-muted/50 py-24" {...fadeIn}>
+        <div className="mx-auto max-w-6xl px-6">
+          <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
+            Perfetto per il tuo locale
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">
+            Qualunque sia il tuo tipo di attività, 5stelle si adatta alle tue
+            esigenze.
+          </p>
+          <motion.div
+            className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+          >
+            {[
+              {
+                icon: UtensilsCrossed,
+                title: "Ristoranti",
+                tagline:
+                  "Ogni piatto racconta una storia. Scopri cosa pensano davvero i tuoi ospiti.",
+              },
+              {
+                icon: Pizza,
+                title: "Pizzerie",
+                tagline:
+                  "Dalla margherita alla speciale: capisci quali creazioni conquistano di più.",
+              },
+              {
+                icon: Coffee,
+                title: "Bar & Caffetterie",
+                tagline:
+                  "Colazioni, aperitivi, pause caffè: ogni momento conta per i tuoi clienti.",
+              },
+              {
+                icon: Hotel,
+                title: "Hotel",
+                tagline:
+                  "Dal check-in al check-out, ogni dettaglio dell'esperienza fa la differenza.",
+              },
+            ].map((venue) => (
+              <motion.div
+                key={venue.title}
+                variants={fadeUp}
+                className="rounded-2xl border bg-background p-6 text-center"
+              >
+                <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+                  <venue.icon className="size-7 text-foreground" />
+                </div>
+                <h3 className="font-semibold">{venue.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  {venue.tagline}
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </motion.section>
+
       {/* ── Pricing ── */}
       <motion.section className="py-24" {...fadeIn}>
         <div className="mx-auto max-w-6xl px-6">
           <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
-            Prezzi semplici e trasparenti
+            Prezzo semplice e trasparente
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">
             Un solo piano con tutto incluso. Nessun costo nascosto.

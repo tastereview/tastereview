@@ -9,6 +9,7 @@ export function CookieBanner() {
       location="bottom"
       buttonText="Ho capito"
       cookieName="5stelle_cookie_consent"
+      contentStyle={{ flex: 1, margin: 0 }}
       style={{
         background: 'hsl(var(--card) / 0.7)',
         backdropFilter: 'blur(12px)',
@@ -18,20 +19,21 @@ export function CookieBanner() {
         boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.1)',
         padding: '12px 24px',
         alignItems: 'center',
+        flexWrap: 'nowrap',
         fontSize: '14px',
       }}
       buttonStyle={{
         background: 'hsl(var(--primary))',
         color: 'hsl(var(--primary-foreground))',
-        borderRadius: '6px',
-        padding: '8px 20px',
+        borderRadius: '8px',
+        padding: '10px 20px',
         fontSize: '14px',
-        fontWeight: 500,
+        fontWeight: 600,
+        whiteSpace: 'nowrap',
       }}
       expires={365}
     >
-      Questo sito utilizza solo cookie tecnici necessari al funzionamento del
-      servizio.{' '}
+      Questo sito usa cookie tecnici.{' '}
       <Link href="/privacy" className="underline hover:no-underline">
         Maggiori informazioni
       </Link>

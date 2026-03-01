@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FeedbackList } from '@/components/dashboard/FeedbackList'
 import { ScoreRing } from '@/components/dashboard/ScoreRing'
 import { QuickStartChecklist } from '@/components/dashboard/QuickStartChecklist'
-import { Frown, Meh, Smile } from 'lucide-react'
+import { Activity, BarChart3, Frown, Heart, Meh, Smile } from 'lucide-react'
 
 function SentimentBar({ great, ok, bad, total }: { great: number; ok: number; bad: number; total: number }) {
   if (total === 0) return null
@@ -185,9 +185,12 @@ export default async function DashboardPage() {
         {/* Overall Score */}
         <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Soddisfazione complessiva
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Soddisfazione complessiva
+              </CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground/50" />
+            </div>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-5 pt-2 pb-6">
             {stats.total > 0 ? (
@@ -211,9 +214,12 @@ export default async function DashboardPage() {
         {/* Stats summary */}
         <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Riepilogo
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Riepilogo
+              </CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground/50" />
+            </div>
           </CardHeader>
           <CardContent className="pt-2 pb-6">
             <div className="grid grid-cols-2 gap-4">
@@ -242,9 +248,12 @@ export default async function DashboardPage() {
         {/* Sentiment breakdown */}
         <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Sentiment
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Sentiment
+              </CardTitle>
+              <Heart className="h-4 w-4 text-muted-foreground/50" />
+            </div>
           </CardHeader>
           <CardContent className="flex flex-col justify-center gap-4 pt-2 pb-6">
             <div className="flex items-center gap-4">

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Check } from 'lucide-react'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -19,6 +19,7 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [passwordFocused, setPasswordFocused] = useState(false)
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -107,12 +108,35 @@ export default function SignupPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Min 8 caratteri, maiuscola, numero, speciale"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onFocus={() => setPasswordFocused(true)}
+                onBlur={() => setPasswordFocused(false)}
                 required
                 disabled={isLoading}
               />
+              {(passwordFocused || password.length > 0) && (
+                <ul className="space-y-1.5 text-xs pt-1">
+                  {[
+                    { met: password.length >= 8, label: 'Almeno 8 caratteri' },
+                    { met: /[A-Z]/.test(password), label: 'Una lettera maiuscola' },
+                    { met: /[0-9]/.test(password), label: 'Un numero' },
+                    { met: /[!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/~`]/.test(password), label: 'Un carattere speciale' },
+                  ].map((req) => (
+                    <li key={req.label} className="flex items-center gap-2">
+                      {req.met ? (
+                        <Check className="h-3.5 w-3.5 text-green-500" />
+                      ) : (
+                        <div className="h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/30" />
+                      )}
+                      <span className={req.met ? 'text-green-600' : 'text-muted-foreground'}>
+                        {req.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Conferma password</Label>
@@ -127,7 +151,7 @@ export default function SignupPage() {
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-4">
+          <CardFooter className="flex flex-col gap-4 pt-6">
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>

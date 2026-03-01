@@ -43,17 +43,13 @@ export function RewardTextEditor({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-md">
-            <Gift className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <CardTitle className="text-lg">Messaggio Premio</CardTitle>
-            <CardDescription>
-              Mostrato dopo il completamento del feedback
-            </CardDescription>
-          </div>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">Messaggio Premio</CardTitle>
+          <Gift className="h-5 w-5 text-muted-foreground/50" />
         </div>
+        <CardDescription>
+          Mostrato dopo il completamento del feedback
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">

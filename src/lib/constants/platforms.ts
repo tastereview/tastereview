@@ -3,7 +3,6 @@ import {
   Instagram,
   Facebook,
   Youtube,
-  Twitter,
   Linkedin,
 } from 'lucide-react'
 import {
@@ -13,6 +12,7 @@ import {
   TikTokIcon,
   YelpIcon,
   TrustpilotIcon,
+  XIcon,
 } from '@/components/icons/PlatformIcons'
 
 export type PlatformCategory = 'review' | 'social'
@@ -27,6 +27,8 @@ export interface Platform {
   valueLabel: string
   buildUrl: (value: string) => string
   buttonColor: string
+  /** Hostnames the URL must match (substring check). Only for URL-based platforms. */
+  allowedDomains?: string[]
 }
 
 export const PLATFORMS: Record<string, Platform> = {
@@ -50,6 +52,7 @@ export const PLATFORMS: Record<string, Platform> = {
     valueLabel: 'URL completo',
     buildUrl: (v) => v,
     buttonColor: 'bg-green-600 hover:bg-green-700',
+    allowedDomains: ['tripadvisor.'],
   },
   thefork: {
     key: 'thefork',
@@ -60,6 +63,7 @@ export const PLATFORMS: Record<string, Platform> = {
     valueLabel: 'URL completo',
     buildUrl: (v) => v,
     buttonColor: 'bg-emerald-600 hover:bg-emerald-700',
+    allowedDomains: ['thefork.', 'lafourchette.'],
   },
   yelp: {
     key: 'yelp',
@@ -70,6 +74,7 @@ export const PLATFORMS: Record<string, Platform> = {
     valueLabel: 'URL completo',
     buildUrl: (v) => v,
     buttonColor: 'bg-red-600 hover:bg-red-700',
+    allowedDomains: ['yelp.'],
   },
   trustpilot: {
     key: 'trustpilot',
@@ -80,6 +85,7 @@ export const PLATFORMS: Record<string, Platform> = {
     valueLabel: 'URL completo',
     buildUrl: (v) => v,
     buttonColor: 'bg-green-500 hover:bg-green-600',
+    allowedDomains: ['trustpilot.'],
   },
   instagram: {
     key: 'instagram',
@@ -102,6 +108,7 @@ export const PLATFORMS: Record<string, Platform> = {
     valueLabel: 'URL completo',
     buildUrl: (v) => v,
     buttonColor: 'bg-blue-500 hover:bg-blue-600',
+    allowedDomains: ['facebook.com', 'fb.com'],
   },
   tiktok: {
     key: 'tiktok',
@@ -123,12 +130,13 @@ export const PLATFORMS: Record<string, Platform> = {
     valueLabel: 'URL completo',
     buildUrl: (v) => v,
     buttonColor: 'bg-red-600 hover:bg-red-700',
+    allowedDomains: ['youtube.com', 'youtu.be'],
   },
   twitter: {
     key: 'twitter',
     name: 'X / Twitter',
     category: 'social',
-    icon: Twitter,
+    icon: XIcon,
     placeholder: 'tuoristorante',
     prefix: '@',
     valueLabel: 'Username',
@@ -144,10 +152,11 @@ export const PLATFORMS: Record<string, Platform> = {
     valueLabel: 'URL completo',
     buildUrl: (v) => v,
     buttonColor: 'bg-blue-700 hover:bg-blue-800',
+    allowedDomains: ['linkedin.com'],
   },
 }
 
-export const DEFAULT_PLATFORM_KEYS = [
+export const INITIAL_PLATFORM_KEYS = [
   'google',
   'tripadvisor',
   'thefork',
@@ -156,7 +165,8 @@ export const DEFAULT_PLATFORM_KEYS = [
   'tiktok',
 ]
 
-export const EXTRA_PLATFORM_KEYS = [
+export const ALL_PLATFORM_KEYS = [
+  ...INITIAL_PLATFORM_KEYS,
   'yelp',
   'trustpilot',
   'youtube',
@@ -164,7 +174,87 @@ export const EXTRA_PLATFORM_KEYS = [
   'linkedin',
 ]
 
-export const ALL_PLATFORM_KEYS = [
-  ...DEFAULT_PLATFORM_KEYS,
-  ...EXTRA_PLATFORM_KEYS,
-]
+/**
+ * Normalizes a URL value: auto-prepends https:// if missing.
+ */
+function normalizeUrl(value: string): string {
+  if (!/^https?:\/\//i.test(value)) {
+    return `https://${value}`
+  }
+  return value
+}
+
+/**
+ * Validates and cleans a single platform value.
+ * Returns { ok: true, value } with the cleaned value, or { ok: false, error } with an Italian error message.
+ */
+export function validatePlatformValue(
+  key: string,
+  rawValue: string
+): { ok: true; value: string } | { ok: false; error: string } {
+  const platform = PLATFORMS[key]
+  if (!platform) return { ok: false, error: 'Piattaforma sconosciuta' }
+
+  const trimmed = rawValue.trim()
+  if (!trimmed) return { ok: true, value: '' }
+
+  // Google Place ID
+  if (key === 'google') {
+    // Place IDs: start with "ChIJ", followed by base64url chars, typically 27 chars
+    if (!/^ChIJ[A-Za-z0-9_-]{20,50}$/.test(trimmed)) {
+      return {
+        ok: false,
+        error: `${platform.name}: Place ID non valido. Deve iniziare con "ChIJ" seguito da caratteri alfanumerici (es. ChIJN1t_tDeuEmsRUsoyG83frY4)`,
+      }
+    }
+    return { ok: true, value: trimmed }
+  }
+
+  // Handle-based platforms (instagram, tiktok, twitter)
+  if (platform.prefix) {
+    const handle = trimmed.replace(/^@/, '')
+    if (!/^[a-zA-Z0-9._]{1,50}$/.test(handle)) {
+      return {
+        ok: false,
+        error: `${platform.name}: username non valido (solo lettere, numeri, punti e underscore)`,
+      }
+    }
+    return { ok: true, value: handle }
+  }
+
+  // URL-based platforms — normalize and validate
+  const normalized = normalizeUrl(trimmed)
+
+  let url: URL
+  try {
+    url = new URL(normalized)
+  } catch {
+    return { ok: false, error: `${platform.name}: URL non valido` }
+  }
+
+  if (!['https:', 'http:'].includes(url.protocol)) {
+    return {
+      ok: false,
+      error: `${platform.name}: l'URL deve iniziare con https://`,
+    }
+  }
+
+  // Check domain matches the platform
+  if (platform.allowedDomains) {
+    const hostname = url.hostname.toLowerCase()
+    const matches = platform.allowedDomains.some((domain) =>
+      hostname.includes(domain)
+    )
+    if (!matches) {
+      const expected = platform.allowedDomains
+        .map((d) => d.replace(/\.$/, ''))
+        .join(', ')
+      return {
+        ok: false,
+        error: `${platform.name}: l'URL deve essere di ${expected}`,
+      }
+    }
+  }
+
+  return { ok: true, value: normalized }
+}
