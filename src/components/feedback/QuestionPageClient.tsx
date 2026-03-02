@@ -229,45 +229,47 @@ export function QuestionPageClient({
     <div className="flex-1 flex flex-col max-w-lg mx-auto w-full px-4">
       <ProgressBar current={questionIndex} total={totalQuestions} />
 
-      <div className="flex-1 flex items-center justify-center py-8">
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={question.id}
-            custom={direction}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.2 }}
-            className="w-full"
-          >
-            <QuestionScreen
-              question={question}
-              value={answer}
-              onChange={setAnswer}
-              error={error}
-            />
-          </motion.div>
-        </AnimatePresence>
-      </div>
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="w-full py-4">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={question.id}
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.2 }}
+              className="w-full"
+            >
+              <QuestionScreen
+                question={question}
+                value={answer}
+                onChange={setAnswer}
+                error={error}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-      {showTurnstile && (
-        <Turnstile
-          siteKey={turnstileSiteKey}
-          options={{ size: 'invisible' }}
-          onSuccess={setTurnstileToken}
+        {showTurnstile && (
+          <Turnstile
+            siteKey={turnstileSiteKey}
+            options={{ size: 'invisible' }}
+            onSuccess={setTurnstileToken}
+          />
+        )}
+
+        <NavigationButtons
+          isFirst={isFirst}
+          isLast={isLast}
+          isSubmitting={isSubmitting}
+          isVerifying={showTurnstile && !turnstileToken}
+          isVerified={showTurnstile && !!turnstileToken}
+          onBack={handleBack}
+          onNext={handleNext}
         />
-      )}
-
-      <NavigationButtons
-        isFirst={isFirst}
-        isLast={isLast}
-        isSubmitting={isSubmitting}
-        isVerifying={showTurnstile && !turnstileToken}
-        isVerified={showTurnstile && !!turnstileToken}
-        onBack={handleBack}
-        onNext={handleNext}
-      />
+      </div>
     </div>
   )
 }

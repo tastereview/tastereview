@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Check } from 'lucide-react'
+import Image from 'next/image'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -76,7 +77,8 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+      <Image src="/logo-5stelle.svg" alt="5stelle" width={48} height={48} className="mb-6" />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Crea il tuo account</CardTitle>

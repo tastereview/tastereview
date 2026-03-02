@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, ArrowRight, Loader2, Check, ShieldCheck } from 'lucide-react'
+import { Undo2, ArrowRight, Loader2, Check, ShieldCheck } from 'lucide-react'
 
 interface NavigationButtonsProps {
   isFirst: boolean
@@ -26,7 +26,7 @@ export function NavigationButtons({
   const showVerificationStatus = isVerifying || isVerified
 
   return (
-    <div className="py-6 space-y-3">
+    <div className="pt-2 space-y-3 w-full">
       <div className="flex justify-between gap-4">
         <Button
           variant="outline"
@@ -34,7 +34,7 @@ export function NavigationButtons({
           disabled={isFirst || isSubmitting}
           className={isFirst ? 'invisible' : ''}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <Undo2 className="h-4 w-4 mr-2" />
           Indietro
         </Button>
 

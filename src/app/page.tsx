@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -340,8 +341,8 @@ export default function Home() {
       {/* Navbar */}
       <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="text-xl font-bold tracking-tight">
-            5stelle
+          <Link href="/" className="flex items-center">
+            <Image src="/logo-5stelle-extended.svg" alt="5stelle" width={130} height={38} priority />
           </Link>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild>
@@ -1058,7 +1059,7 @@ export default function Home() {
       {/* ── Footer ── */}
       <footer className="border-t py-12">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-6 text-sm text-muted-foreground sm:flex-row sm:justify-between">
-          <p className="font-medium text-foreground">5stelle</p>
+          <Image src="/logo-5stelle.svg" alt="5stelle" width={28} height={28} />
           <div className="flex gap-6">
             <Link
               href="/privacy"
