@@ -39,6 +39,8 @@
 - [x] Login page (`/login`) — email/password, error handling, redirect to dashboard
 - [x] Signup page (`/signup`) — email/password with confirmation, auto-login, redirect to onboarding
 - [x] Auth middleware (protect dashboard routes)
+- [x] Password recovery flow — forgot-password page, auth callback, reset-password page
+- [ ] **Configure custom SMTP in Supabase** — required for password recovery emails to work (default provider only sends to org members)
 
 ### 2.2 Restaurant Onboarding
 - [x] Onboarding page (`/onboarding`) — restaurant name + slug, auto-create restaurant + default form
@@ -166,15 +168,15 @@
 - [x] Billing page (`/dashboard/billing`) — Checkout + Customer Portal buttons
 - [x] Stripe Checkout session creation with trial
 - [x] Stripe Customer Portal session + redirect
-- [ ] Show upgrade prompt if trial expired — skipped for MVP
+- [x] Show upgrade prompt if trial expired — alert banners on billing page per status
 
 ### 8.2 Webhook Handler
 - [x] Webhook route (`/api/webhooks/stripe`) with signature verification
 - [x] Handle: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`
 
 ### 8.3 Access Control
-- [ ] Middleware subscription status checks — skipped for MVP
-- [ ] Block dashboard if subscription inactive (except billing) — skipped for MVP
+- [x] Middleware subscription status checks (`isSubscriptionActive` helper in middleware)
+- [x] Block dashboard if subscription inactive (except billing) — redirect to `/dashboard/billing`
 
 ---
 
@@ -228,6 +230,7 @@
 - [ ] Configure custom domain
 - [x] Enable Stripe live mode
 - [x] Connected Netlify for auto-deploy
+- [ ] **Update Supabase Auth URL config** — change Site URL from `localhost` to `https://5stelle.app` + add `https://5stelle.app/auth/callback**` to Redirect URLs
 - [ ] Final deployment
 - [ ] Monitor for errors
 

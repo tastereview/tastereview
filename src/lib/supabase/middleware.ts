@@ -1,6 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+function isSubscriptionActive(status: string, trialEndsAt: string | null): boolean {
+  if (status === 'active') return true
+  if (status === 'trialing' && trialEndsAt) {
+    return new Date(trialEndsAt) > new Date()
+  }
+  return false
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -45,6 +53,25 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
+  }
+
+  // Subscription gate: redirect to billing if subscription is not active
+  if (
+    user &&
+    request.nextUrl.pathname.startsWith('/dashboard') &&
+    !request.nextUrl.pathname.startsWith('/dashboard/billing')
+  ) {
+    const { data: restaurant } = await supabase
+      .from('restaurants')
+      .select('subscription_status, trial_ends_at')
+      .eq('owner_id', user.id)
+      .single()
+
+    if (restaurant && !isSubscriptionActive(restaurant.subscription_status, restaurant.trial_ends_at)) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard/billing'
+      return NextResponse.redirect(url)
+    }
   }
 
   // Redirect logged-in users away from auth pages

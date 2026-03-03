@@ -1,71 +1,67 @@
-# Session Handoff — 2026-03-02 (Session 6)
+# Session Handoff — 2026-03-03 (Session 7)
 
 ## What Was Done
 
-### Session 6 (current)
+### Session 7 (current)
 
-#### 1. Review Prompt Screen
-**Files:** NEW `src/components/feedback/ReviewPromptClient.tsx`, NEW `src/app/r/[restaurantSlug]/[formId]/review/page.tsx`
+#### 1. Subscription Enforcement (Middleware)
+**Files:** `src/lib/supabase/middleware.ts`
 
-- New intermediate screen between last question and reward page
-- Only shows when `feedback_sentiment === 'great'` (reads from sessionStorage); other sentiments redirect straight to reward
-- Primary platform shown as large CTA with animated gold border (rotating reflex + pulsing glow + scale pulse via Framer Motion)
-- Secondary review platforms shown below as slimmer full-width buttons
-- 10-second countdown on "Continua" button; clicking any review link also unlocks it immediately
-- "Continua" button turns black with ArrowRight icon when unlocked
-- Hydration-safe: sentiment read deferred to useEffect to avoid SSR mismatch
-- Server page follows same pattern as reward (force-dynamic, noindex, preview token support)
+- Added `isSubscriptionActive(status, trialEndsAt)` helper function:
+  - `active` → true
+  - `trialing` with future `trial_ends_at` → true
+  - Everything else → false
+- Subscription gate runs after auth guard for all `/dashboard/*` routes except `/dashboard/billing`
+- Queries `restaurants` table (only `subscription_status` + `trial_ends_at`, single row by `owner_id`)
+- Inactive subscription → redirect to `/dashboard/billing`
 
-#### 2. Primary Platform (DB + Dashboard)
-**Files:** `src/types/database.types.ts`, `src/components/dashboard/LinksClient.tsx`
+#### 2. Billing Page Inactive Subscription Alerts
+**Files:** `src/components/dashboard/BillingClient.tsx`
 
-- Added `primary_platform: string | null` column to restaurants table (requires SQL migration)
-- LinksClient: star icon toggle next to review platform labels (filled yellow = primary, outline = not)
-- Star disabled when platform input is empty
-- `handleSave` includes `primary_platform` with guard to clear if platform's value was removed
-- `removePlatform` clears primaryPlatform if the removed platform was primary
+- Added alert banner at top of billing page for inactive subscription states:
+  - **Expired trial** (`trialing` + `trialDaysRemaining <= 0`): red alert
+  - **Canceled**: amber alert
+  - **Past due**: red alert
+  - **Incomplete**: amber alert
+- Uses `AlertTriangle` icon from lucide-react (same pattern as `TrialExpirationBanner`)
+- Status badge now shows "Prova scaduta" (with `AlertCircle` in red) instead of "In prova" when trial expired
+- Removed redundant bright `text-orange-600` "La prova è terminata" text
+- Added gold pulsing animation (Framer Motion) to "Abbonati ora" button — same animation as preferred review platform button (scale pulse + amber glow + rotating conic-gradient shine)
 
-**SQL migration needed:**
-```sql
-ALTER TABLE restaurants ADD COLUMN primary_platform text DEFAULT NULL;
-```
+#### 3. Login Loading State Fix
+**Files:** `src/app/(auth)/login/page.tsx`
 
-#### 3. Navigation Targets Updated
-**Files:** `src/components/feedback/QuestionPageClient.tsx`, `src/app/r/[restaurantSlug]/[formId]/[index]/page.tsx`
+- Moved `setIsLoading(false)` out of `finally` block — now only resets on error/failure
+- Spinner stays visible during navigation to dashboard (previously disappeared before redirect completed)
 
-- Last question now navigates to `/review` instead of `/reward`
-- Overflow redirect (index > question count) also goes to `/review`
+#### 4. Password Recovery Flow
+**Files:** NEW `src/app/(auth)/forgot-password/page.tsx`, NEW `src/app/auth/callback/route.ts`, NEW `src/app/(auth)/reset-password/page.tsx`, `src/app/(auth)/login/page.tsx`
 
-#### 4. Reduced Confetti + Removed Review Buttons from Reward
-**Files:** `src/components/feedback/RewardClient.tsx`
+- **Forgot password page** (`/forgot-password`):
+  - Email input form, calls `supabase.auth.resetPasswordForEmail()` with `redirectTo` pointing to `/auth/callback?next=/reset-password`
+  - Success state shows mail icon + "Controlla la tua email" confirmation
+  - Italian error translations for common Supabase errors (invalid email, rate limit)
+  - "Torna al login" back link
+- **Auth callback route** (`/auth/callback`):
+  - GET handler exchanges Supabase auth code for session via `exchangeCodeForSession()`
+  - Reads `next` query param for redirect target (defaults to `/dashboard`)
+  - Falls back to `/login` on failure
+- **Reset password page** (`/reset-password`):
+  - New password + confirm password form
+  - Same validation rules and strength indicator UI as signup page
+  - Calls `supabase.auth.updateUser({ password })` — user is already authenticated via callback
+  - Redirects to dashboard on success
+- **Login page**: added "Password dimenticata?" link next to Password label
 
-- Replaced continuous `requestAnimationFrame` loop (~1080 particles) with 3 timed bursts at 0ms, 300ms, 600ms (~180 total particles)
-- Removed review platform buttons entirely (now handled by review prompt screen)
-- Removed unused `sentiment` state, `Sentiment` type import, `ExternalLink` import, `reviewLinks` computation
-- Social follow links section kept as-is
-
-#### 5. QR Code Card Mobile Fix
-**Files:** `src/components/dashboard/QRCodeClient.tsx`
-
-- "QR Code per Tavolo" card header changed from `flex items-center justify-between` to `space-y-3` vertical stack
-- Title + description on top, buttons below — prevents overflow on mobile
-
-#### 6. Stripe Live Configuration
-**Files:** `.env.local`
-
-- Added `STRIPE_WEBHOOK_SECRET` (live signing secret)
-- Live keys (publishable, secret, price ID) were already configured
-- `STRIPE_PRICE_ID` currently set to €1.10/day test price; `STRIPE_PRICE_ID-actual` has real €39/month price
-- `NEXT_PUBLIC_APP_URL` stays as localhost for dev; production value set in Netlify env vars
+**BLOCKER:** Supabase default email provider only sends to org member emails (since Sep 2024). Custom SMTP required for this to work with real users.
 
 ---
 
 ## Architecture Decisions
 
-- **Review prompt as separate route** (`/review`) rather than a modal or step within the question flow — keeps it clean, supports direct linking, and follows the existing pattern of one screen per route
-- **Sentiment gate via sessionStorage** — review page reads `feedback_sentiment` and redirects non-great sentiments immediately. Does NOT clear sessionStorage (reward page handles cleanup)
-- **Gold border animation** — solid amber-400 base border + conic-gradient reflex rotating on top + breathing boxShadow glow + scale pulse, all via Framer Motion
-- **Deployment on Netlify** (not Vercel) with domain `5stelle.app`
+- **Subscription check in middleware** (not layout) — catches both SSR and client-side navigation, single source of truth
+- **Auth callback as separate route** (`/app/auth/callback/route.ts`) — handles PKCE code exchange for password recovery (and any future email-based auth flows like magic links)
+- **Password reset via authenticated session** — callback establishes session first, then reset page calls `updateUser()` (standard Supabase pattern)
 
 ---
 
@@ -73,8 +69,9 @@ ALTER TABLE restaurants ADD COLUMN primary_platform text DEFAULT NULL;
 
 | File | Purpose |
 |------|---------|
-| `src/components/feedback/ReviewPromptClient.tsx` | Review prompt screen (client component) |
-| `src/app/r/[restaurantSlug]/[formId]/review/page.tsx` | Review prompt server route |
+| `src/app/(auth)/forgot-password/page.tsx` | Forgot password email form |
+| `src/app/auth/callback/route.ts` | Supabase auth code exchange |
+| `src/app/(auth)/reset-password/page.tsx` | New password form |
 
 ---
 
@@ -82,21 +79,17 @@ ALTER TABLE restaurants ADD COLUMN primary_platform text DEFAULT NULL;
 
 | File | Change |
 |------|--------|
-| `src/types/database.types.ts` | Added `primary_platform` to restaurants Row/Insert/Update |
-| `src/components/dashboard/LinksClient.tsx` | Star toggle for primary platform, save/clear logic |
-| `src/components/feedback/QuestionPageClient.tsx` | Nav target `/reward` → `/review` |
-| `src/app/r/[restaurantSlug]/[formId]/[index]/page.tsx` | Overflow redirect `/reward` → `/review` |
-| `src/components/feedback/RewardClient.tsx` | Reduced confetti, removed review buttons |
-| `src/components/dashboard/QRCodeClient.tsx` | Card header stacked vertically for mobile |
-| `.env.local` | Added Stripe webhook secret |
+| `src/lib/supabase/middleware.ts` | `isSubscriptionActive` helper + subscription gate for dashboard routes |
+| `src/components/dashboard/BillingClient.tsx` | Inactive subscription alerts, "Prova scaduta" status, removed bright red text, gold animated subscribe button |
+| `src/app/(auth)/login/page.tsx` | Loading state fix (spinner persists during redirect), "Password dimenticata?" link |
 
 ---
 
 ## Pending Items / Next Session
 
 ### Priority Tasks
-- [ ] **Subscription enforcement** — block dashboard access (except billing) when subscription inactive
-- [ ] **Trial expired screen** — redirect expired trials to billing with upgrade prompt
+- [ ] **Configure custom SMTP in Supabase** — required for password recovery (and any email-based auth) to work with real users. Resend free tier recommended.
+- [ ] **Update Supabase Auth URL config for production** — change Site URL from `localhost` to `https://5stelle.app` + add `https://5stelle.app/auth/callback**` to Redirect URLs
 - [ ] **Test full Stripe flow on production** — deploy, subscribe with €1.10 test price, verify webhook fires and status updates
 - [ ] **Swap to real price** — change `STRIPE_PRICE_ID` to `STRIPE_PRICE_ID-actual` (€39/month) when ready
 
@@ -104,6 +97,7 @@ ALTER TABLE restaurants ADD COLUMN primary_platform text DEFAULT NULL;
 - [ ] Favicon — add to `/public` or `src/app/`
 - [ ] OpenGraph image — add `/public/og-image.png` (1200x630) and uncomment in layout.tsx
 - [ ] Delete unused `src/components/dashboard/TableManager.tsx`
+- [ ] Apply tweakcn theme customization
 - [ ] Final testing
 - [ ] Launch
 

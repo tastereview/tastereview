@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import type { Restaurant } from '@/types/database.types'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { CreditCard, CheckCircle, AlertCircle, Clock, Loader2 } from 'lucide-react'
+import { CreditCard, CheckCircle, AlertCircle, Clock, Loader2, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface BillingClientProps {
@@ -24,10 +25,14 @@ export function BillingClient({ restaurant, trialDaysRemaining }: BillingClientP
   const [isLoading, setIsLoading] = useState(false)
   const [isManaging, setIsManaging] = useState(false)
 
-  const status = statusLabels[restaurant.subscription_status] || statusLabels.trialing
-  const StatusIcon = status.icon
   const hasActiveSubscription = restaurant.subscription_status === 'active'
   const isTrialing = restaurant.subscription_status === 'trialing'
+  const isTrialExpired = isTrialing && trialDaysRemaining <= 0
+
+  const status = isTrialExpired
+    ? { label: 'Prova scaduta', color: 'text-red-600', icon: AlertCircle as typeof CheckCircle }
+    : statusLabels[restaurant.subscription_status] || statusLabels.trialing
+  const StatusIcon = status.icon
 
   const handleSubscribe = async () => {
     setIsLoading(true)
@@ -86,8 +91,58 @@ export function BillingClient({ restaurant, trialDaysRemaining }: BillingClientP
     }
   }
 
+  const getInactiveAlert = () => {
+    if (hasActiveSubscription) return null
+    if (isTrialing && trialDaysRemaining > 0) return null
+
+    if (isTrialing && trialDaysRemaining <= 0) {
+      return {
+        message: 'La tua prova gratuita è scaduta. Abbonati per continuare a usare 5stelle.',
+        bgColor: 'bg-red-50 border-red-200',
+        textColor: 'text-red-800',
+        iconColor: 'text-red-600',
+      }
+    }
+    if (restaurant.subscription_status === 'canceled') {
+      return {
+        message: 'Il tuo abbonamento è stato cancellato. Riattivalo per accedere a tutte le funzionalità.',
+        bgColor: 'bg-amber-50 border-amber-200',
+        textColor: 'text-amber-800',
+        iconColor: 'text-amber-600',
+      }
+    }
+    if (restaurant.subscription_status === 'past_due') {
+      return {
+        message: 'Il pagamento non è andato a buon fine. Aggiorna il metodo di pagamento.',
+        bgColor: 'bg-red-50 border-red-200',
+        textColor: 'text-red-800',
+        iconColor: 'text-red-600',
+      }
+    }
+    if (restaurant.subscription_status === 'incomplete') {
+      return {
+        message: 'Il pagamento non è stato completato. Completa la procedura per attivare l\'abbonamento.',
+        bgColor: 'bg-amber-50 border-amber-200',
+        textColor: 'text-amber-800',
+        iconColor: 'text-amber-600',
+      }
+    }
+    return null
+  }
+
+  const inactiveAlert = getInactiveAlert()
+
   return (
     <div className="space-y-6">
+      {inactiveAlert && (
+        <div className={`flex items-start gap-3 p-4 rounded-lg border ${inactiveAlert.bgColor}`}>
+          <AlertTriangle className={`h-5 w-5 shrink-0 mt-0.5 ${inactiveAlert.iconColor}`} />
+          <p className={`text-sm font-medium ${inactiveAlert.textColor}`}>
+            {inactiveAlert.message}
+          </p>
+        </div>
+      )}
+
       {/* Current Plan */}
       <Card>
         <CardHeader>
@@ -115,11 +170,6 @@ export function BillingClient({ restaurant, trialDaysRemaining }: BillingClientP
                   {trialDaysRemaining} giorni rimanenti
                 </p>
               )}
-              {isTrialing && trialDaysRemaining === 0 && (
-                <p className="text-sm text-orange-600 mt-1">
-                  La prova è terminata
-                </p>
-              )}
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold">€39</p>
@@ -143,16 +193,45 @@ export function BillingClient({ restaurant, trialDaysRemaining }: BillingClientP
                   }
                 </p>
               </div>
-              <Button onClick={handleSubscribe} disabled={isLoading} size="lg">
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Caricamento...
-                  </>
-                ) : (
-                  'Abbonati ora'
-                )}
-              </Button>
+              <motion.div
+                animate={{
+                  scale: [1, 1.015, 1],
+                  boxShadow: [
+                    '0 0 10px 2px rgba(251,191,36,0.2)',
+                    '0 0 25px 8px rgba(245,158,11,0.4)',
+                    '0 0 10px 2px rgba(251,191,36,0.2)',
+                  ],
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                className="rounded-xl inline-block"
+              >
+                <div className="relative rounded-xl p-[3px] overflow-hidden">
+                  <div className="absolute inset-0 z-0 rounded-xl bg-amber-400" />
+                  <motion.div
+                    className="absolute inset-[-50%] z-[1]"
+                    style={{
+                      background: 'conic-gradient(from 0deg, transparent 0%, transparent 70%, rgba(255,255,255,0.85) 78%, #fde68a 82%, transparent 90%, transparent 100%)',
+                    }}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
+                  />
+                  <Button
+                    onClick={handleSubscribe}
+                    disabled={isLoading}
+                    size="lg"
+                    className="relative z-10 rounded-[9px]"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Caricamento...
+                      </>
+                    ) : (
+                      'Abbonati ora'
+                    )}
+                  </Button>
+                </div>
+              </motion.div>
               <p className="text-xs text-muted-foreground">
                 Pagamento sicuro con Stripe. Cancella quando vuoi.
               </p>
